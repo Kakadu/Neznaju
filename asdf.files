@@ -1,0 +1,8 @@
+CMakeLists.txt
+CTestTestfile.cmake
+ktexteditor_timedate.desktop
+Makefile
+timedate.cpp
+timedate.h
+timedateui.rc
+.gitignore

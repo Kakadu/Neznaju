@@ -10,3 +10,13 @@
 *.lai
 *.la
 *.a
+CMakeFiles/
+CMakeCache.txt
+CMakeTmp/
+CMakeFiles/
+*.cmake
+Makefile
+
+# qt files
+*.moc
+*automoc*
