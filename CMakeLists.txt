@@ -22,7 +22,4 @@ install(FILES timedateui.rc DESTINATION ${DATA_INSTALL_DIR}/ktexteditor_timedate
 install(FILES ktexteditor_timedate.desktop DESTINATION ${SERVICES_INSTALL_DIR})
 
 set(QT_USE_QTNETWORK TRUE)
-
-#target_link_libraries(${QT_QTNETWORK_LIBRARY})
-#find_package(QTNETWORK REQUIRED)
-FIND_PACKAGE( Qt4 4.8.1 COMPONENTS QtCore QtNetwork REQUIRED )
+set(CMAKE_CXX_FLAGS "-std=c++0x")

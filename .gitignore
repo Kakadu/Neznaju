@@ -16,7 +16,8 @@ CMakeTmp/
 CMakeFiles/
 *.cmake
 Makefile
-
+*.user
+*.autosave
 # qt files
 *.moc
 *automoc*

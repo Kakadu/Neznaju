@@ -15,6 +15,7 @@
 #include <QtNetwork>
 #include <QTcpSocket>
 #include <QtNetwork/QTcpServer>
+#include <QtGui/QInputDialog>
 
 /**
   * This is the plugin class. There will be only one instance of this class.
@@ -54,16 +55,20 @@ class TimeDatePluginView
    : public QObject, public KXMLGUIClient
 {
   Q_OBJECT
-    QTcpServer *server;
+    QTcpServer *_server;
+    int _port;
+    const int _hotKeyListen  = Qt::CTRL + Qt::Key_I;
+    const int _hotKeyConnect = Qt::CTRL + Qt::Key_Y;
   public:
     explicit TimeDatePluginView(KTextEditor::View *view = 0);
-    ~TimeDatePluginView();
+    ~TimeDatePluginView() {}
 
   private Q_SLOTS:
-    void slotInsertTimeDate();
-    void onTimer();
+    void slotStartServer();
+    //void onTimer();
     void newUser();
     void readClient();
+    //void requestPort();
 
   private:
     int server_status;
