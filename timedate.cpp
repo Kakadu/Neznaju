@@ -105,9 +105,12 @@ TimeDatePluginView::TimeDatePluginView(KTextEditor::View *view)
     // This is always needed, tell the KDE XML GUI client that we are using
     // that file for reading actions from.
     setXMLFile("timedateui.rc");
-
+    _pluginStatus=ST_NONE;
     this->_server = new QTcpServer();
     connect(_server, SIGNAL(newConnection()), this, SLOT(newUser()));
+    connect(m_view->document(), SIGNAL(textChanged(KTextEditor::Document*)),
+            this, SLOT(documentChanged()) );
+
 }
 
 void TimeDatePluginView::clientTryToConnect() {
@@ -129,45 +132,49 @@ void TimeDatePluginView::clientTryToConnect() {
     this->_clientSocket = new QTcpSocket();
 
     _clientSocket->connectToHost(ip,port.toInt());
+
+    _pluginStatus=ST_CLIENT;
     connect(_clientSocket, SIGNAL(readyRead()), this, SLOT(clientReceivedData()) );
 }
 
 void TimeDatePluginView::clientReceivedData() {
-    qDebug() << "clientReceivedData()";
-    //QDataStream in(_clientSocket);
-    //in.setVersion(QDataStream::Qt_4_0);
-
-    //quint16 blockSize;
-
     if (_clientSocket->bytesAvailable() <= 0)
         return;
 
-    //in >> blockSize;
-    /*qDebug() << "blockSize = " << blockSize
-             << ", bytesAvailable = " << _clientSocket->bytesAvailable()
-             << ", isReadable = " << _clientSocket->isReadable();*/
     QString str=_clientSocket->readAll ();
-    //in >> str;
-
     qDebug() << "str "<< str;
 
     if (str.startsWith("<full>")) {
         int n=str.indexOf("</full>");
         if (n!=-1) {
             str=str.mid(6,n-6);
-            m_view->document()->clear();
-            m_view->document()->insertText(m_view->cursorPosition(), str);
+            if (m_view->document()->text() != str) {
+                m_view->document()->clear();
+                m_view->document()->insertText(m_view->cursorPosition(), str);
+            }
         }
     }
-
 }
 
+void TimeDatePluginView::documentChanged(){
+    if (m_view->document()->text() == "")
+        return;
+    if (_pluginStatus == ST_SERVER) {
+        for (auto &i: SClients) {
+            i->write(QString("<full>"+m_view->document()->text()+"</full>")
+                     .toAscii().data() );
+        }
+    } else if (_pluginStatus == ST_CLIENT) {
+        _clientSocket->write(QString("<full>"+m_view->document()->text()+"</full>")
+                             .toAscii().data() );
+    }
+}
 void TimeDatePluginView::newUser() {
     qDebug() << "inside newUser()";
-    if(server_status==1){
-         qDebug() << QString::fromUtf8("У нас новое соединение!");
+    if(server_status==1) { // TODO: What this variable means
          QTcpSocket* clientSocket = _server->nextPendingConnection();
-         int idusersocs=clientSocket->socketDescriptor();
+         int idusersocs = clientSocket->socketDescriptor();
+         qDebug() << "We have new connection: " << idusersocs;
          SClients[idusersocs]=clientSocket;
          connect(SClients[idusersocs],SIGNAL(readyRead()),this, SLOT(readClient()));
 
@@ -179,16 +186,16 @@ void TimeDatePluginView::newUser() {
 
 void TimeDatePluginView::readClient() {
      QTcpSocket* clientSocket = (QTcpSocket*)sender();
-     //int idusersocs=clientSocket->socketDescriptor();
-
      QString str=clientSocket->readAll();
 
      if (str.startsWith("<full>")) {
          int n=str.indexOf("</full>");
          if (n!=-1) {
              str=str.mid(6,n-6);
-             m_view->document()->clear();
-             m_view->document()->insertText(m_view->cursorPosition(), str);
+             if (m_view->document()->text() != str) {
+                 m_view->document()->clear();
+                 m_view->document()->insertText(m_view->cursorPosition(), str);
+             }
          }
      }
 
@@ -218,6 +225,7 @@ void TimeDatePluginView::slotStartServer() {
     } else {
         server_status=1;
         qDebug() << QString::fromUtf8("Сервер запущен!");
+        _pluginStatus=ST_SERVER;
     }
 /*
     QString localizedTimeDate = i18nc("This is a localized string for default time & date printing on kate document."

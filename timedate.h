@@ -1,8 +1,6 @@
-// Avoid multiple header inclusion
 #ifndef TIMEDATE_H
 #define TIMEDATE_H
 
-// Include the basics
 #include <ktexteditor/plugin.h>
 #include <ktexteditor/view.h>
 #include <kxmlguiclient.h>
@@ -48,6 +46,11 @@ class TimeDatePlugin
     QList<class TimeDatePluginView*> m_views;
 };
 
+
+enum PluginStatus {
+    ST_NONE,ST_SERVER,ST_CLIENT
+};
+
 /**
   * This is the plugin view class. There can be as much instances as views exist.
   */
@@ -58,6 +61,7 @@ class TimeDatePluginView
     QTcpServer *_server;
     int _port;
     QTcpSocket *_clientSocket;
+
     const int _hotKeyListen  = Qt::CTRL + Qt::Key_I;
     const int _hotKeyConnect = Qt::CTRL + Qt::Key_Y;
   public:
@@ -71,9 +75,10 @@ class TimeDatePluginView
     void readClient();
     void clientTryToConnect();
     void clientReceivedData();
-
+    void documentChanged();
   private:
     int server_status;
+    PluginStatus _pluginStatus;
     QMap<int,QTcpSocket *> SClients;
     KTextEditor::View *m_view;
 };
