@@ -4,6 +4,7 @@
  <Menu name="tools"><Text>&amp;Tools</Text>
     <separator group="tools_operations" />
     <Action name="tools_insert_timedate" group="tools_operations"/>
+    <Action name="tools_client_connect" group="tools_operations"/>
  </Menu>
 </MenuBar>
 </kpartplugin>

@@ -57,6 +57,7 @@ class TimeDatePluginView
   Q_OBJECT
     QTcpServer *_server;
     int _port;
+    QTcpSocket *_clientSocket;
     const int _hotKeyListen  = Qt::CTRL + Qt::Key_I;
     const int _hotKeyConnect = Qt::CTRL + Qt::Key_Y;
   public:
@@ -68,7 +69,8 @@ class TimeDatePluginView
     //void onTimer();
     void newUser();
     void readClient();
-    //void requestPort();
+    void clientTryToConnect();
+    void clientReceivedData();
 
   private:
     int server_status;

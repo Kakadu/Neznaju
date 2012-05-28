@@ -93,8 +93,14 @@ TimeDatePluginView::TimeDatePluginView(KTextEditor::View *view)
     // Here is where we connect it to an actual KDE action.
 
     actionCollection()->addAction("tools_insert_timedate", action);
-    action->setShortcut(_hotKeyConnect);
+    action->setShortcut(_hotKeyListen);
     connect(action, SIGNAL(triggered()), this, SLOT(slotStartServer()));
+
+    KAction *action2 = new KAction(i18n("connect_to_server"), this);
+    actionCollection()->addAction("tools_client_connect", action2);
+    action2->setShortcut(_hotKeyConnect);
+    connect(action2, SIGNAL(triggered()), this, SLOT(clientTryToConnect()) );
+
 
     // This is always needed, tell the KDE XML GUI client that we are using
     // that file for reading actions from.
@@ -102,6 +108,58 @@ TimeDatePluginView::TimeDatePluginView(KTextEditor::View *view)
 
     this->_server = new QTcpServer();
     connect(_server, SIGNAL(newConnection()), this, SLOT(newUser()));
+}
+
+void TimeDatePluginView::clientTryToConnect() {
+    bool ok = false;
+    QString serverInfo = QInputDialog::getText(NULL, QString("Enter server IP:Port"), QString("IP:Port"),
+                                             QLineEdit::Normal, "127.0.0.1:3333", &ok);
+    if (!ok) {
+        qDebug() << "User don't wnat to connect";
+        return;
+    }
+    int pos = serverInfo.indexOf(":");
+    if (pos==-1) {
+        qDebug() << "User have written bad data";
+        return;
+    }
+    QString ip = serverInfo.left(pos), port = serverInfo.right(serverInfo.count()-pos-1);
+    qDebug() << "ip = " << ip << "\nport  = " << port;
+
+    this->_clientSocket = new QTcpSocket();
+
+    _clientSocket->connectToHost(ip,port.toInt());
+    connect(_clientSocket, SIGNAL(readyRead()), this, SLOT(clientReceivedData()) );
+}
+
+void TimeDatePluginView::clientReceivedData() {
+    qDebug() << "clientReceivedData()";
+    //QDataStream in(_clientSocket);
+    //in.setVersion(QDataStream::Qt_4_0);
+
+    //quint16 blockSize;
+
+    if (_clientSocket->bytesAvailable() <= 0)
+        return;
+
+    //in >> blockSize;
+    /*qDebug() << "blockSize = " << blockSize
+             << ", bytesAvailable = " << _clientSocket->bytesAvailable()
+             << ", isReadable = " << _clientSocket->isReadable();*/
+    QString str=_clientSocket->readAll ();
+    //in >> str;
+
+    qDebug() << "str "<< str;
+
+    if (str.startsWith("<full>")) {
+        int n=str.indexOf("</full>");
+        if (n!=-1) {
+            str=str.mid(6,n-6);
+            m_view->document()->clear();
+            m_view->document()->insertText(m_view->cursorPosition(), str);
+        }
+    }
+
 }
 
 void TimeDatePluginView::newUser() {
