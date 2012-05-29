@@ -17,6 +17,7 @@
 #include <QtNetwork/QTcpServer>
 #include <QtGui/QInputDialog>
 
+#include "diff_match_patch.h"
 /**
   * This is the plugin class. There will be only one instance of this class.
   * We always want to inherit KTextEditor::Plugin here.
@@ -66,6 +67,13 @@ class TimeDatePluginView
     QTcpServer *_server;
     int _port;
     QTcpSocket *_clientSocket;
+    diff_match_patch dmp;
+    int server_status;
+    PluginStatus _pluginStatus;
+    QMap<int,QTcpSocket *> SClients;
+    KTextEditor::View *m_view;
+    void updateText(QString str);
+    QString _oldText;
 
   public:
     explicit TimeDatePluginView(KTextEditor::View *view = 0);
@@ -73,7 +81,6 @@ class TimeDatePluginView
 
   private Q_SLOTS:
     void slotStartServer();
-    //void onTimer();
     void newUser();
     void readClient();
     void clientTryToConnect();
@@ -81,11 +88,6 @@ class TimeDatePluginView
     void documentChanged();
 
   private:
-    int server_status;
-    PluginStatus _pluginStatus;
-    QMap<int,QTcpSocket *> SClients;
-    KTextEditor::View *m_view;
-    void updateText(QString str);
 };
 
 #endif // TIMEDATE_H

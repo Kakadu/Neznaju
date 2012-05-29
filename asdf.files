@@ -6,3 +6,5 @@ neznaju.cpp
 neznaju.h
 neznajuui.rc
 .gitignore
+diff_match_patch.cpp
+diff_match_patch.h

@@ -111,6 +111,7 @@ TimeDatePluginView::TimeDatePluginView(KTextEditor::View *view)
     connect(m_view->document(), SIGNAL(textChanged(KTextEditor::Document*)),
             this, SLOT(documentChanged()) );
 
+    dmp.diff_main("","");
 }
 
 void TimeDatePluginView::updateText(QString str){
@@ -173,15 +174,30 @@ void TimeDatePluginView::clientReceivedData() {
 void TimeDatePluginView::documentChanged(){
     if (m_view->document()->text() == "")
         return;
+
+    QString patchStr =
+            dmp.patch_toText(dmp.patch_make(_oldText,m_view->document()->text()) );
+
+
+            //dmp.diff_main(_oldText,m_view->document()->text());
+
     if (_pluginStatus == ST_SERVER) {
-      for (auto i=SClients.begin();i!=SClients.end();i++)  {
-	  (*i)->write(QString("<full>"+m_view->document()->text()+"</full>")
+
+
+        for (auto i=SClients.begin();i!=SClients.end();i++)  {
+            (*i)->write(QString("<change>%1</change>").arg(patchStr)
+                     .toUtf8().data() );
+
+        /*
+        for (auto i=SClients.begin();i!=SClients.end();i++)  {
+            (*i)->write(QString("<full>"+m_view->document()->text()+"</full>")
                      .toAscii().data() );
-      }
-        
+                     */
+        }
+
     } else if (_pluginStatus == ST_CLIENT) {
-        _clientSocket->write(QString("<full>"+m_view->document()->text()+"</full>")
-                             .toAscii().data() );
+        _clientSocket->write(QString("<change>%1</change>").arg(patchStr)
+                             .toUtf8().data() );
     }
 }
 void TimeDatePluginView::newUser() {
@@ -203,14 +219,23 @@ void TimeDatePluginView::readClient() {
      QTcpSocket* clientSocket = (QTcpSocket*)sender();
      QString str=clientSocket->readAll();
 
-     if (str.startsWith("<full>")) {
+     if (str.startsWith("<change>")) {
+         int n=str.indexOf("</change>");
+         if (n!=-1) {
+             str=str.mid(8,n-8);
+             QList<Patch> lst = dmp.patch_fromText(str);
+             QPair<QString, QVector<bool> > out
+                = dmp.patch_apply(lst, m_view->document()->text());
+             //TODO: check diff correctness
+             updateText(out.first);
+         }
+     } else if (str.startsWith("<full>")) {
          int n=str.indexOf("</full>");
          if (n!=-1) {
              str=str.mid(6,n-6);
              updateText(str);
-             }
          }
-
+     }
      //m_view->document()->insertText(m_view->cursorPosition(), str+"\n");
      //ui->textinfo->append("ReadClient:"+clientSocket->readAll()+"\n\r");
      // Если нужно закрыть сокет
