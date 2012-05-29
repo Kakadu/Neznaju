@@ -51,6 +51,9 @@ enum PluginStatus {
     ST_NONE,ST_SERVER,ST_CLIENT
 };
 
+    static const int _hotKeyListen  = Qt::CTRL + Qt::Key_I;
+    static const int _hotKeyConnect = Qt::CTRL + Qt::Key_Y;
+
 /**
   * This is the plugin view class. There can be as much instances as views exist.
   */
@@ -62,8 +65,6 @@ class TimeDatePluginView
     int _port;
     QTcpSocket *_clientSocket;
 
-    const int _hotKeyListen  = Qt::CTRL + Qt::Key_I;
-    const int _hotKeyConnect = Qt::CTRL + Qt::Key_Y;
   public:
     explicit TimeDatePluginView(KTextEditor::View *view = 0);
     ~TimeDatePluginView() {}

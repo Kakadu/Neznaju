@@ -160,10 +160,11 @@ void TimeDatePluginView::documentChanged(){
     if (m_view->document()->text() == "")
         return;
     if (_pluginStatus == ST_SERVER) {
-        for (auto &i: SClients) {
-            i->write(QString("<full>"+m_view->document()->text()+"</full>")
+      for (auto i=SClients.begin();i!=SClients.end();i++)  {
+	  (*i)->write(QString("<full>"+m_view->document()->text()+"</full>")
                      .toAscii().data() );
-        }
+      }
+        
     } else if (_pluginStatus == ST_CLIENT) {
         _clientSocket->write(QString("<full>"+m_view->document()->text()+"</full>")
                              .toAscii().data() );
