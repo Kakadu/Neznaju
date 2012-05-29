@@ -1,5 +1,5 @@
 // Own includes
-#include "timedate.h"
+#include "neznaju.h"
 
 // Include the basics
 #include <ktexteditor/document.h>
@@ -32,7 +32,7 @@ K_PLUGIN_FACTORY(TimeDatePluginFactory,
 // constructors).
 // We put there the X-KDE-LibraryName.
 // Is important to provide as last parameter "ktexteditor_plugins".
-K_EXPORT_PLUGIN(TimeDatePluginFactory("ktexteditor_timedate", "ktexteditor_plugins"))
+K_EXPORT_PLUGIN(TimeDatePluginFactory("ktexteditor_neznaju", "ktexteditor_plugins"))
 
 // Constructor
 TimeDatePlugin::TimeDatePlugin(QObject *parent, const QVariantList &args)
@@ -89,10 +89,10 @@ TimeDatePluginView::TimeDatePluginView(KTextEditor::View *view)
 
     KAction *action = new KAction(i18n("Insert Time && Date"), this);
     // Here we need as first parameter the same we declared at the resource
-    // contents file (timedateui.rc). We named the action "tools_insert_timedate".
+    // contents file (neznajuui.rc). We named the action "tools_insert_neznaju".
     // Here is where we connect it to an actual KDE action.
 
-    actionCollection()->addAction("tools_insert_timedate", action);
+    actionCollection()->addAction("tools_insert_neznaju", action);
     action->setShortcut(_hotKeyListen);
     connect(action, SIGNAL(triggered()), this, SLOT(slotStartServer()));
 
@@ -104,7 +104,7 @@ TimeDatePluginView::TimeDatePluginView(KTextEditor::View *view)
 
     // This is always needed, tell the KDE XML GUI client that we are using
     // that file for reading actions from.
-    setXMLFile("timedateui.rc");
+    setXMLFile("neznajuui.rc");
     _pluginStatus=ST_NONE;
     this->_server = new QTcpServer();
     connect(_server, SIGNAL(newConnection()), this, SLOT(newUser()));
@@ -247,4 +247,4 @@ void TimeDatePluginView::slotStartServer() {
 
 // We need to include the moc file since we have declared slots and we are using
 // the Q_OBJECT macro on the TimeDatePluginView class.
-#include "timedate.moc"
+#include "neznaju.moc"

@@ -1,10 +1,10 @@
 [Desktop Entry]
 Encoding=UTF-8
-X-KDE-Library=ktexteditor_timedate
-X-KDE-PluginInfo-Author=Konqui the Dragon
+X-KDE-Library=ktexteditor_neznaju
+X-KDE-PluginInfo-Author=Kakadu & bak
 X-KDE-PluginInfo-Email=konqui@kde.org
-X-KDE-PluginInfo-Name=ktexteditortimedate
-X-KDE-PluginInfo-Version=0.1
+X-KDE-PluginInfo-Name=ktexteditorneznaju
+X-KDE-PluginInfo-Version=0.01
 X-KDE-PluginInfo-Website=http://kate.kde.org
 X-KDE-PluginInfo-Category=Editor
 X-KDE-PluginInfo-Depends=
@@ -15,5 +15,5 @@ X-KDE-Version=4.0
 ServiceTypes=KTextEditor/Plugin
 Type=Service
 Icon=korganizer
-Name=Time & Date
-Comment=Insert current Time & Date
+Name=Neznaju
+Comment=Collaborative text editing. Ctrl + I - start server, Ctrl + Y - connect to server.
