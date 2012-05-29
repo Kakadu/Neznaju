@@ -113,6 +113,23 @@ TimeDatePluginView::TimeDatePluginView(KTextEditor::View *view)
 
 }
 
+void TimeDatePluginView::updateText(QString str){
+    if (m_view->document()->text() != str) {
+
+        KTextEditor::Cursor cur=m_view->cursorPosition();
+
+        m_view->document()->replaceText(
+                KTextEditor::Range(KTextEditor::Cursor(0,0),
+                KTextEditor::Cursor(m_view->document()->lines(),
+                      m_view->document()->line( m_view->document()->lines()).size()   ) ),str);
+
+        m_view->setCursorPosition(cur);
+
+        //m_view->document()->clear();
+        //m_view->document()->insertText( m_view->cursorPosition(), str);
+    }
+}
+
 void TimeDatePluginView::clientTryToConnect() {
     bool ok = false;
     QString serverInfo = QInputDialog::getText(NULL, QString("Enter server IP:Port"), QString("IP:Port"),
@@ -148,10 +165,7 @@ void TimeDatePluginView::clientReceivedData() {
         int n=str.indexOf("</full>");
         if (n!=-1) {
             str=str.mid(6,n-6);
-            if (m_view->document()->text() != str) {
-                m_view->document()->clear();
-                m_view->document()->insertText(m_view->cursorPosition(), str);
-            }
+            updateText(str);
         }
     }
 }
@@ -193,12 +207,9 @@ void TimeDatePluginView::readClient() {
          int n=str.indexOf("</full>");
          if (n!=-1) {
              str=str.mid(6,n-6);
-             if (m_view->document()->text() != str) {
-                 m_view->document()->clear();
-                 m_view->document()->insertText(m_view->cursorPosition(), str);
+             updateText(str);
              }
          }
-     }
 
      //m_view->document()->insertText(m_view->cursorPosition(), str+"\n");
      //ui->textinfo->append("ReadClient:"+clientSocket->readAll()+"\n\r");

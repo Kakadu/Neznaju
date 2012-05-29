@@ -1,8 +1,8 @@
 CMakeLists.txt
 CTestTestfile.cmake
-ktexteditor_timedate.desktop
+ktexteditor_neznaju.desktop
 Makefile
-timedate.cpp
-timedate.h
-timedateui.rc
+neznaju.cpp
+neznaju.h
+neznajuui.rc
 .gitignore

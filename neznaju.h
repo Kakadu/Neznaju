@@ -3,6 +3,8 @@
 
 #include <ktexteditor/plugin.h>
 #include <ktexteditor/view.h>
+#include <ktexteditor/range.h>
+#include <ktexteditor/cursor.h>
 #include <kxmlguiclient.h>
 #include <klocalizedstring.h>
 
@@ -77,11 +79,13 @@ class TimeDatePluginView
     void clientTryToConnect();
     void clientReceivedData();
     void documentChanged();
+
   private:
     int server_status;
     PluginStatus _pluginStatus;
     QMap<int,QTcpSocket *> SClients;
     KTextEditor::View *m_view;
+    void updateText(QString str);
 };
 
 #endif // TIMEDATE_H
