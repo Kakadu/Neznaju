@@ -114,9 +114,11 @@ TimeDatePluginView::TimeDatePluginView(KTextEditor::View *view)
     dmp.diff_main("","");
 
     _oldText="";
+    _fromServer=false;
 }
 
 void TimeDatePluginView::updateText(QString str){
+    _fromServer=true;
     if (m_view->document()->text() != str) {
 
         KTextEditor::Cursor cur=m_view->cursorPosition();
@@ -127,6 +129,8 @@ void TimeDatePluginView::updateText(QString str){
                       m_view->document()->line( m_view->document()->lines()).size()   ) ),str);
 
         m_view->setCursorPosition(cur);
+
+        _oldText= m_view->document()->text();
 
         //m_view->document()->clear();
         //m_view->document()->insertText( m_view->cursorPosition(), str);
@@ -164,6 +168,17 @@ void TimeDatePluginView::clientReceivedData() {
     QString str=_clientSocket->readAll ();
     qDebug() << "str "<< str;
 
+    if (str.startsWith("<change>")) {
+        int n=str.indexOf("</change>");
+        if (n!=-1) {
+            str=str.mid(8,n-8);
+            QList<Patch> lst = dmp.patch_fromText(str);
+            QPair<QString, QVector<bool> > out
+               = dmp.patch_apply(lst, m_view->document()->text());
+            //TODO: check diff correctness
+            updateText(out.first);
+        }
+    } else
     if (str.startsWith("<full>")) {
         int n=str.indexOf("</full>");
         if (n!=-1) {
@@ -177,9 +192,16 @@ void TimeDatePluginView::documentChanged(){
     if (m_view->document()->text() == "")
         return;
 
+    if (_fromServer==true)
+    {
+        _fromServer=false;
+        return;
+    }
 
     QString str1=_oldText;
     QString str2=m_view->document()->text();
+
+    if (str1==str2) return;
 
 
     QString patchStr =

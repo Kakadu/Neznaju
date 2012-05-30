@@ -74,6 +74,7 @@ class TimeDatePluginView
     KTextEditor::View *m_view;
     void updateText(QString str);
     QString _oldText;
+    bool _fromServer;
 
   public:
     explicit TimeDatePluginView(KTextEditor::View *view = 0);
