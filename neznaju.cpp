@@ -112,6 +112,8 @@ TimeDatePluginView::TimeDatePluginView(KTextEditor::View *view)
             this, SLOT(documentChanged()) );
 
     dmp.diff_main("","");
+
+    _oldText="";
 }
 
 void TimeDatePluginView::updateText(QString str){
@@ -175,8 +177,21 @@ void TimeDatePluginView::documentChanged(){
     if (m_view->document()->text() == "")
         return;
 
+
+    QString str1=_oldText;
+    QString str2=m_view->document()->text();
+
+
+    QString patchStr =
+            dmp.patch_toText(dmp.patch_make(str1,str2) );
+    _oldText=m_view->document()->text();
+
+/*
     QString patchStr =
             dmp.patch_toText(dmp.patch_make(_oldText,m_view->document()->text()) );
+    _oldText=m_view->document()->text();
+*/
+    //qDebug() << patchStr;
 
 
             //dmp.diff_main(_oldText,m_view->document()->text());
@@ -185,20 +200,19 @@ void TimeDatePluginView::documentChanged(){
 
 
         for (auto i=SClients.begin();i!=SClients.end();i++)  {
-            (*i)->write(QString("<change>%1</change>").arg(patchStr)
+         //m_view->document()->text());
+
+         (*i)->write(QString("<change>%1</change>").arg(patchStr)
                      .toUtf8().data() );
 
-        /*
-        for (auto i=SClients.begin();i!=SClients.end();i++)  {
-            (*i)->write(QString("<full>"+m_view->document()->text()+"</full>")
-                     .toAscii().data() );
-                     */
         }
 
     } else if (_pluginStatus == ST_CLIENT) {
         _clientSocket->write(QString("<change>%1</change>").arg(patchStr)
                              .toUtf8().data() );
     }
+
+
 }
 void TimeDatePluginView::newUser() {
     qDebug() << "inside newUser()";
