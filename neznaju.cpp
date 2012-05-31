@@ -110,6 +110,10 @@ TimeDatePluginView::TimeDatePluginView(KTextEditor::View *view)
     connect(_server, SIGNAL(newConnection()), this, SLOT(newUser()));
     connect(m_view->document(), SIGNAL(textChanged(KTextEditor::Document*)),
             this, SLOT(documentChanged()) );
+    connect(m_view->document(),SIGNAL(textInserted(KTextEditor::Document*,KTextEditor::Range)),
+            this,SLOT(documentTextInserted(KTextEditor::Document*,KTextEditor::Range)  ));
+    connect(m_view->document(),SIGNAL(textRemoved(KTextEditor::Document*,KTextEditor::Range)),
+            this,SLOT(documentTextRemoved(KTextEditor::Document*,KTextEditor::Range)  ));
 
     dmp.diff_main("","");
 
@@ -188,10 +192,58 @@ void TimeDatePluginView::clientReceivedData() {
     }
 }
 
+
+void TimeDatePluginView::documentTextInserted(KTextEditor::Document* doc,KTextEditor::Range rng){
+    //qDebug() << "Text added: " << rng.start().column() << "-" <<  rng.end().column() << doc->text(rng);
+    if (_fromServer==true)
+    {
+        _fromServer=false;
+        return;
+    }
+
+    QString str=QString("<add>%1,%2,%3,%4,%5</add>").arg(rng.start().line())
+                .arg(rng.start().column())
+                .arg(rng.end().line())
+                .arg(rng.end().column())
+                .arg(doc->text(rng));
+    //qDebug() << str;
+    if (_pluginStatus == ST_SERVER) {
+        for (auto i=SClients.begin();i!=SClients.end();i++)  {
+         (*i)->write(str.toUtf8().data() );
+        }
+    } else if (_pluginStatus == ST_CLIENT) {
+        _clientSocket->write(str.toUtf8().data() );
+    }
+}
+
+void TimeDatePluginView::documentTextRemoved(KTextEditor::Document* doc,KTextEditor::Range rng){
+    //qDebug() << "Text removed: " << rng.start().column() << "-" << rng.end().column();
+    if (_fromServer==true)
+    {
+        _fromServer=false;
+        return;
+    }
+
+    QString str=QString("<del>%1,%2,%3,%4</del>").arg(rng.start().line())
+                .arg(rng.start().column())
+                .arg(rng.end().line())
+                .arg(rng.end().column());
+    //qDebug() << str;
+
+    if (_pluginStatus == ST_SERVER) {
+        for (auto i=SClients.begin();i!=SClients.end();i++)  {
+         (*i)->write(str.toUtf8().data() );
+        }
+    } else if (_pluginStatus == ST_CLIENT) {
+        _clientSocket->write(str.toUtf8().data() );
+    }
+}
+
 void TimeDatePluginView::documentChanged(){
+    /*
     if (m_view->document()->text() == "")
         return;
-
+    //m_view->document()->textInserted();
     if (_fromServer==true)
     {
         _fromServer=false;
@@ -208,16 +260,6 @@ void TimeDatePluginView::documentChanged(){
             dmp.patch_toText(dmp.patch_make(str1,str2) );
     _oldText=m_view->document()->text();
 
-/*
-    QString patchStr =
-            dmp.patch_toText(dmp.patch_make(_oldText,m_view->document()->text()) );
-    _oldText=m_view->document()->text();
-*/
-    //qDebug() << patchStr;
-
-
-            //dmp.diff_main(_oldText,m_view->document()->text());
-
     if (_pluginStatus == ST_SERVER) {
 
 
@@ -233,9 +275,9 @@ void TimeDatePluginView::documentChanged(){
         _clientSocket->write(QString("<change>%1</change>").arg(patchStr)
                              .toUtf8().data() );
     }
-
-
+*/
 }
+
 void TimeDatePluginView::newUser() {
     qDebug() << "inside newUser()";
     if(server_status==1) { // TODO: What this variable means

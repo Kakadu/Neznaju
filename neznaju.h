@@ -87,6 +87,8 @@ class TimeDatePluginView
     void clientTryToConnect();
     void clientReceivedData();
     void documentChanged();
+    void documentTextInserted(KTextEditor::Document* doc,KTextEditor::Range rng);
+    void documentTextRemoved(KTextEditor::Document* doc,KTextEditor::Range rng);
 
   private:
 };
