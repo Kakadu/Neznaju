@@ -226,13 +226,7 @@ void TimeDatePluginView::clientTryToConnect() {
     connect(_clientSocket, SIGNAL(readyRead()), this, SLOT(clientReceivedData()) );
 }
 
-void TimeDatePluginView::clientReceivedData() {
-    if (_clientSocket->bytesAvailable() <= 0)
-        return;
-
-    QString str=_clientSocket->readAll ();
-    qDebug() << "str "<< str;
-
+void TimeDatePluginView::applyDiff(QString str) {
     if (str.startsWith("<add>")) {
         int n=str.indexOf("</add>");
         if (n!=-1) {
@@ -267,6 +261,39 @@ void TimeDatePluginView::clientReceivedData() {
     }
 }
 
+void TimeDatePluginView::clientReceivedData() {
+    if (_clientSocket->bytesAvailable() <= 0)
+        return;
+
+    QByteArray str = _clientSocket->readAll();
+    QString tmp;
+    for (auto i:str)
+        tmp +=  QString::number((int)i);
+    qDebug() << "bytes: " << tmp;
+    qDebug() << "message: "<< str;
+    splitMessage(str);
+}
+
+static int findDelim(const QByteArray &str,int start = 0) {
+    for (int i=start; i<str.length()-1; ++i) {
+        // -1 because (signed char) (0xFF) == -1
+        if (str[i]==-1 && str[i+1]==-1)
+            return i+2;
+    }
+    return -1;
+}
+
+void TimeDatePluginView::splitMessage(const QByteArray &str) {
+    int left = 0, right;
+    QString tmp;
+    do {
+        right = findDelim(str,left);
+        tmp = str.mid(left,right-left);
+        //qDebug() << "splitMsg " << tmp;
+        applyDiff(tmp);
+        left = right;
+    } while(left != -1);
+}
 
 void TimeDatePluginView::documentTextInserted(KTextEditor::Document* doc,KTextEditor::Range rng){
     //qDebug() << "Text added: " << rng.start().column() << "-" <<  rng.end().column() << doc->text(rng);
@@ -281,13 +308,26 @@ void TimeDatePluginView::documentTextInserted(KTextEditor::Document* doc,KTextEd
                 .arg(rng.end().line())
                 .arg(rng.end().column())
                 .arg(doc->text(rng));
-    //qDebug() << str;
+    send(str);
+}
+
+void TimeDatePluginView::send(const QString &msg) {
+    QByteArray arr = msg.toUtf8();
+    arr.push_back(0xFF);
+    arr.push_back(0xFF);
+    QString tmp;
+    for (auto i:arr)
+        tmp +=  QString::number((int)i);
+    qDebug() << "Sendbytes: " << tmp;
+
     if (_pluginStatus == ST_SERVER) {
-        for (auto i=SClients.begin();i!=SClients.end();i++)  {
-         (*i)->write(str.toUtf8().data() );
+        for (auto i=SClients.begin(); i!=SClients.end(); ++i) {
+            (*i)->write(arr.data());
+            (*i)->flush();
         }
     } else if (_pluginStatus == ST_CLIENT) {
-        _clientSocket->write(str.toUtf8().data() );
+        _clientSocket->write(arr.data() );
+        _clientSocket->flush();
     }
 }
 
@@ -304,14 +344,7 @@ void TimeDatePluginView::documentTextRemoved(KTextEditor::Document* doc,KTextEdi
                 .arg(rng.end().line())
                 .arg(rng.end().column());
     //qDebug() << str;
-
-    if (_pluginStatus == ST_SERVER) {
-        for (auto i=SClients.begin();i!=SClients.end();i++)  {
-         (*i)->write(str.toUtf8().data() );
-        }
-    } else if (_pluginStatus == ST_CLIENT) {
-        _clientSocket->write(str.toUtf8().data() );
-    }
+    send(str);
 }
 
 void TimeDatePluginView::documentChanged(){
@@ -370,39 +403,8 @@ void TimeDatePluginView::newUser() {
 
 void TimeDatePluginView::readClient() {
      QTcpSocket* clientSocket = (QTcpSocket*)sender();
-     QString str=clientSocket->readAll();
-
-     if (str.startsWith("<add>")) {
-         int n=str.indexOf("</add>");
-         if (n!=-1) {
-             str=str.mid(5,n-5);
-             addText(str);
-         }
-     } else
-     if (str.startsWith("<del>")) {
-         int n=str.indexOf("</del>");
-         if (n!=-1) {
-             str=str.mid(5,n-5);
-             delText(str);
-         }
-     } else
-     if (str.startsWith("<change>")) {
-         int n=str.indexOf("</change>");
-         if (n!=-1) {
-             str=str.mid(8,n-8);
-             QList<Patch> lst = dmp.patch_fromText(str);
-             QPair<QString, QVector<bool> > out
-                = dmp.patch_apply(lst, m_view->document()->text());
-             //TODO: check diff correctness
-             updateText(out.first);
-         }
-     } else if (str.startsWith("<full>")) {
-         int n=str.indexOf("</full>");
-         if (n!=-1) {
-             str=str.mid(6,n-6);
-             updateText(str);
-         }
-     }
+     QByteArray str = clientSocket->readAll();
+     splitMessage(str);
      //m_view->document()->insertText(m_view->cursorPosition(), str+"\n");
      //ui->textinfo->append("ReadClient:"+clientSocket->readAll()+"\n\r");
      // Если нужно закрыть сокет

@@ -16,6 +16,7 @@
 #include <QTcpSocket>
 #include <QtNetwork/QTcpServer>
 #include <QtGui/QInputDialog>
+#include <QtXml/QXmlReader>
 
 #include "diff_match_patch.h"
 /**
@@ -91,7 +92,9 @@ class TimeDatePluginView
     void documentChanged();
     void documentTextInserted(KTextEditor::Document* doc,KTextEditor::Range rng);
     void documentTextRemoved(KTextEditor::Document* doc,KTextEditor::Range rng);
-
+    void send(const QString &);
+    void splitMessage(const QByteArray &str);
+    void applyDiff(QString);
   private:
 };
 
