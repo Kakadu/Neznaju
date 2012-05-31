@@ -141,6 +141,67 @@ void TimeDatePluginView::updateText(QString str){
     }
 }
 
+void TimeDatePluginView::addText(QString str){
+    _fromServer=true;
+    qDebug() << "Str:" << str;
+    KTextEditor::Cursor curs1,curs2;
+    int n;
+
+    n=str.indexOf(",");
+    curs1.setLine(str.left(n).toInt());
+    str=str.mid(n+1,str.length());
+
+    n=str.indexOf(",");
+    curs1.setColumn(str.left(n).toInt());
+    str=str.mid(n+1,str.length());
+
+    n=str.indexOf(",");
+    curs2.setLine(str.left(n).toInt());
+    str=str.mid(n+1,str.length());
+
+    n=str.indexOf(",");
+    curs2.setColumn(str.left(n).toInt());
+    str=str.mid(n+1,str.length());
+
+    //KTextEditor::Range(curs1,curs2);
+
+    str=str.toUtf8();
+
+    m_view->document()->insertText(curs1,str);
+
+    //qDebug() << "Curline:" << cur.line() << str;
+}
+
+void TimeDatePluginView::delText(QString str){
+    _fromServer=true;
+    qDebug() << "Str:" << str;
+    KTextEditor::Cursor curs1,curs2;
+    int n;
+
+    n=str.indexOf(",");
+    curs1.setLine(str.left(n).toInt());
+    str=str.mid(n+1,str.length());
+
+    n=str.indexOf(",");
+    curs1.setColumn(str.left(n).toInt());
+    str=str.mid(n+1,str.length());
+
+    n=str.indexOf(",");
+    curs2.setLine(str.left(n).toInt());
+    str=str.mid(n+1,str.length());
+
+    n=str.indexOf(",");
+    curs2.setColumn(str.left(n).toInt());
+    str=str.mid(n+1,str.length());
+
+    KTextEditor::Range rng(curs1,curs2);
+
+    m_view->document()->removeText(rng);
+
+    //qDebug() << "Curline:" << cur.line() << str;
+}
+
+
 void TimeDatePluginView::clientTryToConnect() {
     bool ok = false;
     QString serverInfo = QInputDialog::getText(NULL, QString("Enter server IP:Port"), QString("IP:Port"),
@@ -172,6 +233,20 @@ void TimeDatePluginView::clientReceivedData() {
     QString str=_clientSocket->readAll ();
     qDebug() << "str "<< str;
 
+    if (str.startsWith("<add>")) {
+        int n=str.indexOf("</add>");
+        if (n!=-1) {
+            str=str.mid(5,n-5);
+            addText(str);
+        }
+    } else
+    if (str.startsWith("<del>")) {
+        int n=str.indexOf("</del>");
+        if (n!=-1) {
+            str=str.mid(5,n-5);
+            delText(str);
+        }
+    } else
     if (str.startsWith("<change>")) {
         int n=str.indexOf("</change>");
         if (n!=-1) {
@@ -297,6 +372,20 @@ void TimeDatePluginView::readClient() {
      QTcpSocket* clientSocket = (QTcpSocket*)sender();
      QString str=clientSocket->readAll();
 
+     if (str.startsWith("<add>")) {
+         int n=str.indexOf("</add>");
+         if (n!=-1) {
+             str=str.mid(5,n-5);
+             addText(str);
+         }
+     } else
+     if (str.startsWith("<del>")) {
+         int n=str.indexOf("</del>");
+         if (n!=-1) {
+             str=str.mid(5,n-5);
+             delText(str);
+         }
+     } else
      if (str.startsWith("<change>")) {
          int n=str.indexOf("</change>");
          if (n!=-1) {

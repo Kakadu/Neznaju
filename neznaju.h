@@ -73,6 +73,8 @@ class TimeDatePluginView
     QMap<int,QTcpSocket *> SClients;
     KTextEditor::View *m_view;
     void updateText(QString str);
+    void addText(QString str);
+    void delText(QString str);
     QString _oldText;
     bool _fromServer;
 
