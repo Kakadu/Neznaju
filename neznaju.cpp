@@ -165,8 +165,6 @@ void TimeDatePluginView::addText(QString str){
 
     //KTextEditor::Range(curs1,curs2);
 
-    str=str.toUtf8();
-
     m_view->document()->insertText(curs1,str);
 
     //qDebug() << "Curline:" << cur.line() << str;
@@ -226,7 +224,9 @@ void TimeDatePluginView::clientTryToConnect() {
     connect(_clientSocket, SIGNAL(readyRead()), this, SLOT(clientReceivedData()) );
 }
 
-void TimeDatePluginView::applyDiff(QString str) {
+void TimeDatePluginView::applyDiff(QString str2) {
+    QString str=str2;
+
     if (str.startsWith("<add>")) {
         int n=str.indexOf("</add>");
         if (n!=-1) {
@@ -285,12 +285,12 @@ static int findDelim(const QByteArray &str,int start = 0) {
 
 void TimeDatePluginView::splitMessage(const QByteArray &str) {
     int left = 0, right;
-    QString tmp;
+    QByteArray tmp;
     do {
         right = findDelim(str,left);
         tmp = str.mid(left,right-left);
         //qDebug() << "splitMsg " << tmp;
-        applyDiff(tmp);
+        applyDiff(QUrl::fromPercentEncoding(tmp));
         left = right;
     } while(left != -1);
 }
@@ -312,7 +312,7 @@ void TimeDatePluginView::documentTextInserted(KTextEditor::Document* doc,KTextEd
 }
 
 void TimeDatePluginView::send(const QString &msg) {
-    QByteArray arr = msg.toUtf8();
+    QByteArray arr = QUrl::toPercentEncoding(msg);
     arr.push_back(0xFF);
     arr.push_back(0xFF);
     QString tmp;
