@@ -76,11 +76,11 @@ NeznajuPluginView::NeznajuPluginView(KTextEditor::View *view)
     dmp.diff_main("","");
 
     _oldText="";
-    _fromServer=false;
+    _isRemoteMessage=false;
 }
 
 void NeznajuPluginView::updateText(QString str){
-    _fromServer=true;
+    _isRemoteMessage=true;
     if (m_view->document()->text() != str) {
 
         KTextEditor::Cursor cur=m_view->cursorPosition();
@@ -100,7 +100,7 @@ void NeznajuPluginView::updateText(QString str){
 }
 
 void NeznajuPluginView::addText(QString str){
-    _fromServer=true;
+    _isRemoteMessage=true;
     qDebug() << "Str:" << str;
     KTextEditor::Cursor curs1,curs2;
     int n;
@@ -129,7 +129,7 @@ void NeznajuPluginView::addText(QString str){
 }
 
 void NeznajuPluginView::delText(QString str){
-    _fromServer=true;
+    _isRemoteMessage=true;
     qDebug() << "Str:" << str;
     KTextEditor::Cursor curs1,curs2;
     int n;
@@ -179,7 +179,7 @@ void NeznajuPluginView::clientTryToConnect() {
     _clientSocket->connectToHost(ip,port.toInt());
 
     _pluginStatus=ST_CLIENT;
-    connect(_clientSocket, SIGNAL(readyRead()), this, SLOT(clientReceivedData()) );
+    connect(_clientSocket, SIGNAL(readyRead()), this, SLOT(fromServerReceived()) );
 }
 
 void NeznajuPluginView::applyDiff(QString str2) {
@@ -219,18 +219,30 @@ void NeznajuPluginView::applyDiff(QString str2) {
     }
 }
 
-void NeznajuPluginView::clientReceivedData() {
+void NeznajuPluginView::applyChanges(const QByteArray& msg) {
+    //    splitMessage(str);
+
+}
+
+void NeznajuPluginView::fromClientReceived() {
+     QTcpSocket* clientSocket = (QTcpSocket*)sender();
+     auto msg = clientSocket->readAll();
+     applyChanges(msg);
+     sendToClients(msg,clientSocket->socketDescriptor());
+}
+
+void NeznajuPluginView::fromServerReceived() {
     if (_clientSocket->bytesAvailable() <= 0)
         return;
 
-    QByteArray str = _clientSocket->readAll();
-    QString tmp;
+    applyChanges(_clientSocket->readAll());
+/*    QString tmp;
     for (auto i:str)
         tmp +=  QString::number((int)i);
     qDebug() << "bytes: " << tmp;
-    qDebug() << "message: "<< str;
-    splitMessage(str);
+    qDebug() << "message: "<< str; */
 }
+
 
 static int findDelim(const QByteArray &str,int start = 0) {
     for (int i=start; i<str.length()-1; ++i) {
@@ -254,19 +266,34 @@ void NeznajuPluginView::splitMessage(const QByteArray &str) {
 }
 
 void NeznajuPluginView::documentTextInserted(KTextEditor::Document* doc,KTextEditor::Range rng){
-    //qDebug() << "Text added: " << rng.start().column() << "-" <<  rng.end().column() << doc->text(rng);
-    if (_fromServer==true)
-    {
-        _fromServer=false;
-        return;
-    }
-
     QString str=QString("<add>%1,%2,%3,%4,%5</add>").arg(rng.start().line())
                 .arg(rng.start().column())
                 .arg(rng.end().line())
                 .arg(rng.end().column())
                 .arg(doc->text(rng));
-    send(str);
+    transmitCommand(str);
+}
+void NeznajuPluginView::transmitCommand(const QString &msg) {
+    if(_isRemoteMessage) {
+        _isRemoteMessage=false;
+        return;
+    }
+    QByteArray arr = QUrl::toPercentEncoding(msg);
+    if (_pluginStatus == ST_SERVER)
+        sendToClients(arr);
+    else if (_pluginStatus == ST_CLIENT)
+        sendToServer(arr);
+}
+void NeznajuPluginView::sendToServer(QByteArray &msg) {
+    _clientSocket->write(msg);
+    _clientSocket->flush();
+}
+void NeznajuPluginView::sendToClients(QByteArray &msg, int clientId) {
+    for (QMap<int,QTcpSocket *>::Iterator i=SClients.begin(); i!=SClients.end(); ++i)
+        if (clientId != i.key()) {
+            (*i)->write(msg.data());
+            (*i)->flush();
+        }
 }
 
 void NeznajuPluginView::send(const QString &msg) {
@@ -290,90 +317,37 @@ void NeznajuPluginView::send(const QString &msg) {
 }
 
 void NeznajuPluginView::documentTextRemoved(KTextEditor::Document* doc,KTextEditor::Range rng){
-    //qDebug() << "Text removed: " << rng.start().column() << "-" << rng.end().column();
-    if (_fromServer==true)
-    {
-        _fromServer=false;
-        return;
-    }
-
     QString str=QString("<del>%1,%2,%3,%4</del>").arg(rng.start().line())
                 .arg(rng.start().column())
                 .arg(rng.end().line())
                 .arg(rng.end().column());
-    //qDebug() << str;
-    send(str);
-}
-
-void NeznajuPluginView::documentChanged(){
-    /*
-    if (m_view->document()->text() == "")
-        return;
-    //m_view->document()->textInserted();
-    if (_fromServer==true)
-    {
-        _fromServer=false;
-        return;
-    }
-
-    QString str1=_oldText;
-    QString str2=m_view->document()->text();
-
-    if (str1==str2) return;
-
-
-    QString patchStr =
-            dmp.patch_toText(dmp.patch_make(str1,str2) );
-    _oldText=m_view->document()->text();
-
-    if (_pluginStatus == ST_SERVER) {
-
-
-        for (auto i=SClients.begin();i!=SClients.end();i++)  {
-         //m_view->document()->text());
-
-         (*i)->write(QString("<change>%1</change>").arg(patchStr)
-                     .toUtf8().data() );
-
-        }
-
-    } else if (_pluginStatus == ST_CLIENT) {
-        _clientSocket->write(QString("<change>%1</change>").arg(patchStr)
-                             .toUtf8().data() );
-    }
-*/
+    transmitCommand(str);
 }
 
 void NeznajuPluginView::newUser() {
-    qDebug() << "inside newUser()";
     if(server_status==1) { // TODO: What this variable means
          QTcpSocket* clientSocket = _server->nextPendingConnection();
          int idusersocs = clientSocket->socketDescriptor();
          qDebug() << "We have new connection: " << idusersocs;
          SClients[idusersocs]=clientSocket;
-         connect(SClients[idusersocs],SIGNAL(readyRead()),this, SLOT(readClient()));
+         connect(SClients[idusersocs],SIGNAL(readyRead()),this, SLOT(fromClientReceived()));
 
+         sendFull(idusersocs);
+         /*
          QTextStream os(clientSocket);
          os.setAutoDetectUnicode(true);
          os << "<full>"+m_view->document()->text() +"</full>";
+                 */
      }
 }
 
-void NeznajuPluginView::readClient() {
-     QTcpSocket* clientSocket = (QTcpSocket*)sender();
-     QByteArray str = clientSocket->readAll();
-     splitMessage(str);
-     //m_view->document()->insertText(m_view->cursorPosition(), str+"\n");
-     //ui->textinfo->append("ReadClient:"+clientSocket->readAll()+"\n\r");
-     // Если нужно закрыть сокет
-     //clientSocket->close();
-     //SClients.remove(idusersocs);
+void NeznajuPluginView::sendFull(int clientId) {
+    QTextStream os(SClients[clientId]);
+    QString msg="<full>"+m_view->document()->text() +"</full>";
+    os.setAutoDetectUnicode(true);
+    os << QUrl::toPercentEncoding(msg).data();
 }
-/*
-void NeznajuPluginView::onTimer() {
-    m_view->document()->insertText(m_view->cursorPosition(), "Wazza!");
-}
-*/
+
 void NeznajuPluginView::slotStartServer() {
     bool ok;
     int port = QInputDialog::getInt(NULL, QString("Enter the port"), QString("Port number"),

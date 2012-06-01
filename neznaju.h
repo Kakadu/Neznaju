@@ -46,7 +46,8 @@ class NeznajuPluginView
     void addText(QString str);
     void delText(QString str);
     QString _oldText;
-    bool _fromServer;
+    //bool _fromServer;
+    bool _isRemoteMessage;
 
   public:
     explicit NeznajuPluginView(KTextEditor::View *view = 0);
@@ -56,9 +57,12 @@ class NeznajuPluginView
     void slotStartServer();
     void newUser();
     void readClient();
+    void sendFull(int clientId);
+    void transmitCommand(const QString&);
     void clientTryToConnect();
     void clientReceivedData();
-    void documentChanged();
+    void sendToServer(QByteArray &);
+    void sendToClients(QByteArray &, int clientId = -1);
     void documentTextInserted(KTextEditor::Document* doc,KTextEditor::Range rng);
     void documentTextRemoved(KTextEditor::Document* doc,KTextEditor::Range rng);
     void send(const QString &);
