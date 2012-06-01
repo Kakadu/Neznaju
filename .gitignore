@@ -21,3 +21,4 @@ Makefile
 # qt files
 *.moc
 *automoc*
+*~
