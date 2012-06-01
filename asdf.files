@@ -2,6 +2,8 @@ CMakeLists.txt
 CTestTestfile.cmake
 ktexteditor_neznaju.desktop
 Makefile
+neznajuPlugin.cpp
+neznajuPlugin.h
 neznaju.cpp
 neznaju.h
 neznajuui.rc
