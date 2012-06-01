@@ -6,15 +6,15 @@
   * This is the plugin class. There will be only one instance of this class.
   * We always want to inherit KTextEditor::Plugin here.
   */
-class TimeDatePlugin
+class NeznajuPlugin
   : public KTextEditor::Plugin
 {
   public:
     // Constructor
-    explicit TimeDatePlugin(QObject *parent,
+    explicit NeznajuPlugin(QObject *parent,
                             const QVariantList &args);
     // Destructor
-    virtual ~TimeDatePlugin();
+    virtual ~NeznajuPlugin();
 
     // Overriden methods
     // This method is called when a plugin has to be added to a view. As there

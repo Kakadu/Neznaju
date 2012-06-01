@@ -21,8 +21,8 @@
 // here. The registerPlugin function takes an optional QString parameter which is a
 // keyword to uniquely identify the plugin then (it maps to X-KDE-PluginKeyword in the
 // .desktop file).
-K_PLUGIN_FACTORY(TimeDatePluginFactory,
-                 registerPlugin<TimeDatePlugin>();
+K_PLUGIN_FACTORY(NeznajuPluginFactory,
+                 registerPlugin<NeznajuPlugin>();
                 )
 
 // With the next macro call, the library exports version information about the
@@ -34,7 +34,7 @@ K_PLUGIN_FACTORY(TimeDatePluginFactory,
 // constructors).
 // We put there the X-KDE-LibraryName.
 // Is important to provide as last parameter "ktexteditor_plugins".
-K_EXPORT_PLUGIN(TimeDatePluginFactory("ktexteditor_neznaju", "ktexteditor_plugins"))
+K_EXPORT_PLUGIN(NeznajuPluginFactory("ktexteditor_neznaju", "ktexteditor_plugins"))
 
 
 // Plugin view class
@@ -43,7 +43,7 @@ NeznajuPluginView::NeznajuPluginView(KTextEditor::View *view)
   , KXMLGUIClient(view)
   , m_view(view)
 {
-    setComponentData(TimeDatePluginFactory::componentData());
+    setComponentData(NeznajuPluginFactory::componentData());
 
     KAction *action = new KAction(i18n("Insert Time && Date"), this);
     // Here we need as first parameter the same we declared at the resource
