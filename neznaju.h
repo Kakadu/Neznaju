@@ -56,11 +56,11 @@ class NeznajuPluginView
   private Q_SLOTS:
     void slotStartServer();
     void newUser();
-    void readClient();
+    void fromClientReceived();
     void sendFull(int clientId);
     void transmitCommand(const QString&);
     void clientTryToConnect();
-    void clientReceivedData();
+    void fromServerReceived();
     void sendToServer(QByteArray &);
     void sendToClients(QByteArray &, int clientId = -1);
     void documentTextInserted(KTextEditor::Document* doc,KTextEditor::Range rng);
