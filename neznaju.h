@@ -1,5 +1,5 @@
-#ifndef TIMEDATE_H
-#define TIMEDATE_H
+#ifndef NEZNAJU_H
+#define NEZNAJU_H
 
 #include <ktexteditor/plugin.h>
 #include <ktexteditor/view.h>
@@ -39,7 +39,7 @@ class TimeDatePlugin
     // behave in different ways in different opened views where it is loaded, in
     // Kate plugins are added to views. For that reason we have the plugin itself
     // (this class) and then the plugin view class.
-    // In this methods we have to create/remove TimeDatePluginView classes.
+    // In this methods we have to create/remove NeznajuPluginView classes.
     void addView (KTextEditor::View *view);
     void removeView (KTextEditor::View *view);
 
@@ -47,7 +47,7 @@ class TimeDatePlugin
     void writeConfig();
 
   private:
-    QList<class TimeDatePluginView*> m_views;
+    QList<class NeznajuPluginView*> m_views;
 };
 
 
@@ -61,7 +61,7 @@ enum PluginStatus {
 /**
   * This is the plugin view class. There can be as much instances as views exist.
   */
-class TimeDatePluginView
+class NeznajuPluginView
    : public QObject, public KXMLGUIClient
 {
   Q_OBJECT
@@ -80,8 +80,8 @@ class TimeDatePluginView
     bool _fromServer;
 
   public:
-    explicit TimeDatePluginView(KTextEditor::View *view = 0);
-    ~TimeDatePluginView() {}
+    explicit NeznajuPluginView(KTextEditor::View *view = 0);
+    ~NeznajuPluginView() {}
 
   private Q_SLOTS:
     void slotStartServer();
@@ -98,4 +98,4 @@ class TimeDatePluginView
   private:
 };
 
-#endif // TIMEDATE_H
+#endif // NEZNAJU_H

@@ -50,7 +50,7 @@ TimeDatePlugin::~TimeDatePlugin()
 // Create the plugin view class and add it to the views list
 void TimeDatePlugin::addView(KTextEditor::View *view)
 {
-    TimeDatePluginView *nview = new TimeDatePluginView(view);
+    NeznajuPluginView *nview = new NeznajuPluginView(view);
     m_views.append(nview);
 }
 
@@ -62,7 +62,7 @@ void TimeDatePlugin::removeView(KTextEditor::View *view)
     {
         if (m_views.at(z)->parentClient() == view)
         {
-            TimeDatePluginView *nview = m_views.at(z);
+            NeznajuPluginView *nview = m_views.at(z);
             m_views.removeAll(nview);
             delete nview;
         }
@@ -80,7 +80,7 @@ void TimeDatePlugin::writeConfig()
 
 
 // Plugin view class
-TimeDatePluginView::TimeDatePluginView(KTextEditor::View *view)
+NeznajuPluginView::NeznajuPluginView(KTextEditor::View *view)
   : QObject(view)
   , KXMLGUIClient(view)
   , m_view(view)
@@ -121,7 +121,7 @@ TimeDatePluginView::TimeDatePluginView(KTextEditor::View *view)
     _fromServer=false;
 }
 
-void TimeDatePluginView::updateText(QString str){
+void NeznajuPluginView::updateText(QString str){
     _fromServer=true;
     if (m_view->document()->text() != str) {
 
@@ -141,7 +141,7 @@ void TimeDatePluginView::updateText(QString str){
     }
 }
 
-void TimeDatePluginView::addText(QString str){
+void NeznajuPluginView::addText(QString str){
     _fromServer=true;
     qDebug() << "Str:" << str;
     KTextEditor::Cursor curs1,curs2;
@@ -170,7 +170,7 @@ void TimeDatePluginView::addText(QString str){
     //qDebug() << "Curline:" << cur.line() << str;
 }
 
-void TimeDatePluginView::delText(QString str){
+void NeznajuPluginView::delText(QString str){
     _fromServer=true;
     qDebug() << "Str:" << str;
     KTextEditor::Cursor curs1,curs2;
@@ -200,7 +200,7 @@ void TimeDatePluginView::delText(QString str){
 }
 
 
-void TimeDatePluginView::clientTryToConnect() {
+void NeznajuPluginView::clientTryToConnect() {
     bool ok = false;
     QString serverInfo = QInputDialog::getText(NULL, QString("Enter server IP:Port"), QString("IP:Port"),
                                              QLineEdit::Normal, "127.0.0.1:3333", &ok);
@@ -224,7 +224,7 @@ void TimeDatePluginView::clientTryToConnect() {
     connect(_clientSocket, SIGNAL(readyRead()), this, SLOT(clientReceivedData()) );
 }
 
-void TimeDatePluginView::applyDiff(QString str2) {
+void NeznajuPluginView::applyDiff(QString str2) {
     QString str=str2;
 
     if (str.startsWith("<add>")) {
@@ -261,7 +261,7 @@ void TimeDatePluginView::applyDiff(QString str2) {
     }
 }
 
-void TimeDatePluginView::clientReceivedData() {
+void NeznajuPluginView::clientReceivedData() {
     if (_clientSocket->bytesAvailable() <= 0)
         return;
 
@@ -283,7 +283,7 @@ static int findDelim(const QByteArray &str,int start = 0) {
     return -1;
 }
 
-void TimeDatePluginView::splitMessage(const QByteArray &str) {
+void NeznajuPluginView::splitMessage(const QByteArray &str) {
     int left = 0, right;
     QByteArray tmp;
     do {
@@ -295,7 +295,7 @@ void TimeDatePluginView::splitMessage(const QByteArray &str) {
     } while(left != -1);
 }
 
-void TimeDatePluginView::documentTextInserted(KTextEditor::Document* doc,KTextEditor::Range rng){
+void NeznajuPluginView::documentTextInserted(KTextEditor::Document* doc,KTextEditor::Range rng){
     //qDebug() << "Text added: " << rng.start().column() << "-" <<  rng.end().column() << doc->text(rng);
     if (_fromServer==true)
     {
@@ -311,7 +311,7 @@ void TimeDatePluginView::documentTextInserted(KTextEditor::Document* doc,KTextEd
     send(str);
 }
 
-void TimeDatePluginView::send(const QString &msg) {
+void NeznajuPluginView::send(const QString &msg) {
     QByteArray arr = QUrl::toPercentEncoding(msg);
     arr.push_back(0xFF);
     arr.push_back(0xFF);
@@ -331,7 +331,7 @@ void TimeDatePluginView::send(const QString &msg) {
     }
 }
 
-void TimeDatePluginView::documentTextRemoved(KTextEditor::Document* doc,KTextEditor::Range rng){
+void NeznajuPluginView::documentTextRemoved(KTextEditor::Document* doc,KTextEditor::Range rng){
     //qDebug() << "Text removed: " << rng.start().column() << "-" << rng.end().column();
     if (_fromServer==true)
     {
@@ -347,7 +347,7 @@ void TimeDatePluginView::documentTextRemoved(KTextEditor::Document* doc,KTextEdi
     send(str);
 }
 
-void TimeDatePluginView::documentChanged(){
+void NeznajuPluginView::documentChanged(){
     /*
     if (m_view->document()->text() == "")
         return;
@@ -386,7 +386,7 @@ void TimeDatePluginView::documentChanged(){
 */
 }
 
-void TimeDatePluginView::newUser() {
+void NeznajuPluginView::newUser() {
     qDebug() << "inside newUser()";
     if(server_status==1) { // TODO: What this variable means
          QTcpSocket* clientSocket = _server->nextPendingConnection();
@@ -401,7 +401,7 @@ void TimeDatePluginView::newUser() {
      }
 }
 
-void TimeDatePluginView::readClient() {
+void NeznajuPluginView::readClient() {
      QTcpSocket* clientSocket = (QTcpSocket*)sender();
      QByteArray str = clientSocket->readAll();
      splitMessage(str);
@@ -412,11 +412,11 @@ void TimeDatePluginView::readClient() {
      //SClients.remove(idusersocs);
 }
 /*
-void TimeDatePluginView::onTimer() {
+void NeznajuPluginView::onTimer() {
     m_view->document()->insertText(m_view->cursorPosition(), "Wazza!");
 }
 */
-void TimeDatePluginView::slotStartServer() {
+void NeznajuPluginView::slotStartServer() {
     bool ok;
     int port = QInputDialog::getInt(NULL, QString("Enter the port"), QString("Port number"),
                                     3333, 1025, 65535,1, &ok);
@@ -451,5 +451,5 @@ void TimeDatePluginView::slotStartServer() {
 }
 
 // We need to include the moc file since we have declared slots and we are using
-// the Q_OBJECT macro on the TimeDatePluginView class.
+// the Q_OBJECT macro on the NeznajuPluginView class.
 #include "neznaju.moc"
