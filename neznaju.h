@@ -17,11 +17,15 @@
 #include <QtNetwork/QTcpServer>
 #include <QtGui/QInputDialog>
 #include <QtXml/QXmlReader>
+#include <QtCore/QPair>
 
 #include "diff_match_patch.h"
 
 enum PluginStatus {
     ST_NONE,ST_SERVER,ST_CLIENT
+};
+enum CommandSort {
+    CMD_FULL,CMD_ADD,CMD_DEL,CMD_UNKNOWN
 };
 
     static const int _hotKeyListen  = Qt::CTRL + Qt::Key_I;
@@ -54,8 +58,12 @@ class NeznajuPluginView
     ~NeznajuPluginView() {}
 
   private Q_SLOTS:
+    // TODO: move methods which are not slots to private block
+    QPair<CommandSort,QString> splitHelper2(const QString& msg,
+                             int left,int& right);
     void slotStartServer();
     void newUser();
+    void applyChanges(const QByteArray&);
     void fromClientReceived();
     void sendFull(int clientId);
     void transmitCommand(const QString&);

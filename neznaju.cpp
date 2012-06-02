@@ -218,10 +218,59 @@ void NeznajuPluginView::applyDiff(QString str2) {
         }
     }
 }
+QPair<CommandSort,QString> NeznajuPluginView::splitHelper2(const QString& msg,
+                                     int left,int& right) {
+    static QString ans;
+    static auto fail = qMakePair(CMD_UNKNOWN,QString(""));
+    if (msg.indexOf("<add>",left) == left) {
+        right = msg.indexOf("</add>",left);
+        if (right==-1)
+            return fail;
+        ans = msg.mid(left+5,right-left-5);
+        right += 6;
+        return qMakePair(CMD_ADD, ans);
+    } else if (msg.indexOf("<del>",left) == left) {
+        right = msg.indexOf("</del>",left);
+        if (right==-1)
+            return fail;
+        ans = msg.mid(left+5,right-left-5);
+        right += 6;
+        return qMakePair(CMD_DEL, ans);
+    } else if (msg.indexOf("<full>",left) == left) {
+        right = msg.indexOf("</full>",left);
+        if (right==-1)
+            return fail;
+        ans = msg.mid(left+6,right-left-6);
+        right += 7;
+        return qMakePair(CMD_FULL, ans);
+    } else
+        return fail;
 
-void NeznajuPluginView::applyChanges(const QByteArray& msg) {
-    //    splitMessage(str);
-
+}
+void NeznajuPluginView::applyChanges(const QByteArray& msg1) {
+    QString msg = QUrl::fromPercentEncoding(msg1);
+    int left=0, right;
+    do {
+        QPair<CommandSort,QString> typ = splitHelper2(msg,left,right);
+        switch (typ.first) {
+        case CMD_ADD:
+            addText(typ.second);
+            left = right;
+            continue;
+        case CMD_DEL:
+            delText(typ.second);
+            left = right;
+            continue;
+        case CMD_FULL:
+            updateText(typ.second);
+            left = right;
+            continue;
+        case CMD_UNKNOWN:
+            qDebug() << "UNKNOWN command received";
+            break;
+        }
+        Q_ASSERT_X(false,"splitMessage2","Not all cases are in switch");
+    }while (left < msg.count());
 }
 
 void NeznajuPluginView::fromClientReceived() {
@@ -365,21 +414,6 @@ void NeznajuPluginView::slotStartServer() {
         qDebug() << QString::fromUtf8("Сервер запущен!");
         _pluginStatus=ST_SERVER;
     }
-/*
-    QString localizedTimeDate = i18nc("This is a localized string for default time & date printing on kate document."
-                                      "%e means day in XX format."
-                                      "%m means month in XX format."
-                                      "%Y means year in XXXX format."
-                                      "%H means hours in XX format."
-                                      "%M means minutes in XX format."
-                                      "Please, if in your language time or date is written in a different order, change it here",
-                                      "%m-%e-%Y %H:%M");
-*/
-    // We create a KDateTime object with the current time & date.
-    //KDateTime dt(QDateTime::currentDateTime());
-    // We insert the information in the document at the current cursor position
-    // with the default string declared on the header.
-    //m_view->document()->insertText(m_view->cursorPosition(), dt.toString("HF GL!"));
 }
 
 // We need to include the moc file since we have declared slots and we are using
