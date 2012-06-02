@@ -46,9 +46,6 @@ class NeznajuPluginView
     PluginStatus _pluginStatus;
     QMap<int,QTcpSocket *> SClients;
     KTextEditor::View *m_view;
-    void updateText(QString str);
-    void addText(QString str);
-    void delText(QString str);
     QString _oldText;
     //bool _fromServer;
     bool _isRemoteMessage;
@@ -56,22 +53,25 @@ class NeznajuPluginView
   public:
     explicit NeznajuPluginView(KTextEditor::View *view = 0);
     ~NeznajuPluginView() {}
+  private:
+    void sendToServer(QByteArray &);
+    void sendToClients(QByteArray &, int clientId = -1);
+    void fullText(QString str);
+    void addText(QString str);
+    void delText(QString str);
 
   private Q_SLOTS:
     // TODO: move methods which are not slots to private block
     QPair<CommandSort,QString> splitHelper2(const QString& msg,
                              int left,int& right);
-
     void slotStartServer();
-    void newUser();
+    void onNewUserConnected();
     void applyChanges(const QByteArray&);
     void fromClientReceived();
+    void fromServerReceived();
     void sendFull(int clientId);
     void transmitCommand(const QString&);
     void clientTryToConnect();
-    void fromServerReceived();
-    void sendToServer(QByteArray &);
-    void sendToClients(QByteArray &, int clientId = -1);
     void onDocumentTextInserted(KTextEditor::Document* doc,KTextEditor::Range rng);
     void onDocumentTextRemoved(KTextEditor::Document* doc,KTextEditor::Range rng);
     void send(const QString &);
