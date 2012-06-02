@@ -28,8 +28,8 @@ enum CommandSort {
     CMD_FULL,CMD_ADD,CMD_DEL,CMD_UNKNOWN
 };
 
-    static const int _hotKeyListen  = Qt::CTRL + Qt::Key_I;
-    static const int _hotKeyConnect = Qt::CTRL + Qt::Key_Y;
+static const int _hotKeyListen  = Qt::CTRL + Qt::Key_I;
+static const int _hotKeyConnect = Qt::CTRL + Qt::Key_Y;
 
 /**
   * This is the plugin view class. There can be as much instances as views exist.
@@ -60,6 +60,7 @@ class NeznajuPluginView
     void addText(QString str);
     void delText(QString str);
     void applyChanges(const QByteArray&);
+    void transmitCommand(const QString&);
 
   private Q_SLOTS:
     // TODO: move methods which are not slots to private block
@@ -70,13 +71,12 @@ class NeznajuPluginView
     void fromClientReceived();
     void fromServerReceived();
     void sendFull(int clientId);
-    void transmitCommand(const QString&);
     void clientTryToConnect();
     void onDocumentTextInserted(KTextEditor::Document* doc,KTextEditor::Range rng);
     void onDocumentTextRemoved(KTextEditor::Document* doc,KTextEditor::Range rng);
-    void send(const QString &);
-    void splitMessage(const QByteArray &str);
-    void applyDiff(QString);
+    //void send(const QString &);
+    //void splitMessage(const QByteArray &str);
+    //void applyDiff(QString);
   private:
 };
 

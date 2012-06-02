@@ -178,7 +178,7 @@ void NeznajuPluginView::clientTryToConnect() {
     _pluginStatus=ST_CLIENT;
     connect(_clientSocket, SIGNAL(readyRead()), this, SLOT(fromServerReceived()) );
 }
-
+/*
 void NeznajuPluginView::applyDiff(QString str2) {
     QString str=str2;
 
@@ -216,7 +216,6 @@ void NeznajuPluginView::applyDiff(QString str2) {
     }
 }
 
-
 static int findDelim(const QByteArray &str,int start = 0) {
     for (int i=start; i<str.length()-1; ++i) {
         // -1 because (signed char) (0xFF) == -1
@@ -225,7 +224,6 @@ static int findDelim(const QByteArray &str,int start = 0) {
     }
     return -1;
 }
-
 void NeznajuPluginView::splitMessage(const QByteArray &str) {
     int left = 0, right;
     QByteArray tmp;
@@ -257,7 +255,7 @@ void NeznajuPluginView::send(const QString &msg) {
         _clientSocket->flush();
     }
 }
-
+*/
 void NeznajuPluginView::onDocumentTextInserted(KTextEditor::Document* doc,KTextEditor::Range rng){
     QString str = QString("<add>%1,%2,%3,%4,%5</add>")
                 .arg(rng.start().line())
