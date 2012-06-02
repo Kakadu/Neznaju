@@ -69,9 +69,9 @@ NeznajuPluginView::NeznajuPluginView(KTextEditor::View *view)
     connect(m_view->document(), SIGNAL(textChanged(KTextEditor::Document*)),
             this, SLOT(documentChanged()) );
     connect(m_view->document(),SIGNAL(textInserted(KTextEditor::Document*,KTextEditor::Range)),
-            this,SLOT(documentTextInserted(KTextEditor::Document*,KTextEditor::Range)  ));
+            this,SLOT(onDocumentTextInserted(KTextEditor::Document*,KTextEditor::Range)  ));
     connect(m_view->document(),SIGNAL(textRemoved(KTextEditor::Document*,KTextEditor::Range)),
-            this,SLOT(documentTextRemoved(KTextEditor::Document*,KTextEditor::Range)  ));
+            this,SLOT(onDocumentTextRemoved(KTextEditor::Document*,KTextEditor::Range)  ));
 
     dmp.diff_main("","");
 
@@ -314,14 +314,6 @@ void NeznajuPluginView::splitMessage(const QByteArray &str) {
     } while(left != -1);
 }
 
-void NeznajuPluginView::documentTextInserted(KTextEditor::Document* doc,KTextEditor::Range rng){
-    QString str=QString("<add>%1,%2,%3,%4,%5</add>").arg(rng.start().line())
-                .arg(rng.start().column())
-                .arg(rng.end().line())
-                .arg(rng.end().column())
-                .arg(doc->text(rng));
-    transmitCommand(str);
-}
 void NeznajuPluginView::transmitCommand(const QString &msg) {
     if(_isRemoteMessage) {
         _isRemoteMessage=false;
@@ -333,10 +325,12 @@ void NeznajuPluginView::transmitCommand(const QString &msg) {
     else if (_pluginStatus == ST_CLIENT)
         sendToServer(arr);
 }
+
 void NeznajuPluginView::sendToServer(QByteArray &msg) {
     _clientSocket->write(msg);
     _clientSocket->flush();
 }
+
 void NeznajuPluginView::sendToClients(QByteArray &msg, int clientId) {
     for (QMap<int,QTcpSocket *>::Iterator i=SClients.begin(); i!=SClients.end(); ++i)
         if (clientId != i.key()) {
@@ -365,8 +359,19 @@ void NeznajuPluginView::send(const QString &msg) {
     }
 }
 
-void NeznajuPluginView::documentTextRemoved(KTextEditor::Document* doc,KTextEditor::Range rng){
-    QString str=QString("<del>%1,%2,%3,%4</del>").arg(rng.start().line())
+void NeznajuPluginView::onDocumentTextInserted(KTextEditor::Document* doc,KTextEditor::Range rng){
+    QString str = QString("<add>%1,%2,%3,%4,%5</add>")
+                .arg(rng.start().line())
+                .arg(rng.start().column())
+                .arg(rng.end().line())
+                .arg(rng.end().column())
+                .arg(doc->text(rng));
+    transmitCommand(str);
+}
+
+void NeznajuPluginView::onDocumentTextRemoved(KTextEditor::Document* doc,KTextEditor::Range rng){
+    QString str = QString("<del>%1,%2,%3,%4</del>")
+                .arg(rng.start().line())
                 .arg(rng.start().column())
                 .arg(rng.end().line())
                 .arg(rng.end().column());

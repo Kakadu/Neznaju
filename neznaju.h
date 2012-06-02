@@ -61,6 +61,7 @@ class NeznajuPluginView
     // TODO: move methods which are not slots to private block
     QPair<CommandSort,QString> splitHelper2(const QString& msg,
                              int left,int& right);
+
     void slotStartServer();
     void newUser();
     void applyChanges(const QByteArray&);
@@ -71,8 +72,8 @@ class NeznajuPluginView
     void fromServerReceived();
     void sendToServer(QByteArray &);
     void sendToClients(QByteArray &, int clientId = -1);
-    void documentTextInserted(KTextEditor::Document* doc,KTextEditor::Range rng);
-    void documentTextRemoved(KTextEditor::Document* doc,KTextEditor::Range rng);
+    void onDocumentTextInserted(KTextEditor::Document* doc,KTextEditor::Range rng);
+    void onDocumentTextRemoved(KTextEditor::Document* doc,KTextEditor::Range rng);
     void send(const QString &);
     void splitMessage(const QByteArray &str);
     void applyDiff(QString);
