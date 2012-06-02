@@ -63,15 +63,15 @@ NeznajuPluginView::NeznajuPluginView(KTextEditor::View *view)
     // This is always needed, tell the KDE XML GUI client that we are using
     // that file for reading actions from.
     setXMLFile("neznajuui.rc");
-    _pluginStatus=ST_NONE;
+    _pluginStatus = ST_NONE;
     this->_server = new QTcpServer();
     connect(_server, SIGNAL(newConnection()), this, SLOT(onNewUserConnected()));
-    connect(m_view->document(), SIGNAL(textChanged(KTextEditor::Document*)),
-            this, SLOT(documentChanged()) );
+    //connect(m_view->document(), SIGNAL(textChanged(KTextEditor::Document*)),
+    //        this, SLOT(documentChanged()) );
     connect(m_view->document(),SIGNAL(textInserted(KTextEditor::Document*,KTextEditor::Range)),
-            this,SLOT(onDocumentTextInserted(KTextEditor::Document*,KTextEditor::Range)  ));
+            this,SLOT(onDocumentTextInserted(KTextEditor::Document*,KTextEditor::Range) ));
     connect(m_view->document(),SIGNAL(textRemoved(KTextEditor::Document*,KTextEditor::Range)),
-            this,SLOT(onDocumentTextRemoved(KTextEditor::Document*,KTextEditor::Range)  ));
+            this,SLOT(onDocumentTextRemoved(KTextEditor::Document*,KTextEditor::Range) ));
 
     dmp.diff_main("","");
 
@@ -79,21 +79,20 @@ NeznajuPluginView::NeznajuPluginView(KTextEditor::View *view)
     _isRemoteMessage=false;
 }
 
-void NeznajuPluginView::fullText(QString str){
+void NeznajuPluginView::fullText(const QString &str) {
     _isRemoteMessage = true;
     if (m_view->document()->text() != str) {
-        KTextEditor::Cursor cur=m_view->cursorPosition();
-
+        KTextEditor::Cursor cur = m_view->cursorPosition();
+        m_view->document()->setText(str);
+        /*
         m_view->document()->replaceText(
                 KTextEditor::Range(KTextEditor::Cursor(0,0),
                 KTextEditor::Cursor(m_view->document()->lines(),
-                m_view->document()->line( m_view->document()->lines()).size()   ) ),str);
-
-        m_view->setCursorPosition(cur);
+                m_view->document()->line( m_view->document()->lines()).size() ) ),str);
+        */
+        if (!m_view->setCursorPosition(cur))
+            qDebug() << "Cant revert cursor position after setting full text";
         _oldText = m_view->document()->text();
-
-        //m_view->document()->clear();
-        //m_view->document()->insertText( m_view->cursorPosition(), str);
     }
 }
 
@@ -382,7 +381,7 @@ void NeznajuPluginView::onNewUserConnected() {
          QTcpSocket* clientSocket = _server->nextPendingConnection();
          int idusersocs = clientSocket->socketDescriptor();
          qDebug() << "We have new connection: " << idusersocs;
-         SClients[idusersocs]=clientSocket;
+         SClients[idusersocs] = clientSocket;
          connect(SClients[idusersocs],SIGNAL(readyRead()),this, SLOT(fromClientReceived()));
 
          sendFull(idusersocs);
@@ -396,7 +395,7 @@ void NeznajuPluginView::onNewUserConnected() {
 
 void NeznajuPluginView::sendFull(int clientId) {
     QTextStream os(SClients[clientId]);
-    QString msg="<full>"+m_view->document()->text() +"</full>";
+    QString msg = "<full>"+m_view->document()->text() +"</full>";
     os.setAutoDetectUnicode(true);
     os << QUrl::toPercentEncoding(msg).data();
 }

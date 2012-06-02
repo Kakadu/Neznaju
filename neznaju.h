@@ -56,9 +56,10 @@ class NeznajuPluginView
   private:
     void sendToServer(QByteArray &);
     void sendToClients(QByteArray &, int clientId = -1);
-    void fullText(QString str);
+    void fullText(const QString &str);
     void addText(QString str);
     void delText(QString str);
+    void applyChanges(const QByteArray&);
 
   private Q_SLOTS:
     // TODO: move methods which are not slots to private block
@@ -66,7 +67,6 @@ class NeznajuPluginView
                              int left,int& right);
     void slotStartServer();
     void onNewUserConnected();
-    void applyChanges(const QByteArray&);
     void fromClientReceived();
     void fromServerReceived();
     void sendFull(int clientId);
