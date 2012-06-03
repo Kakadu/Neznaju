@@ -97,19 +97,18 @@ void NeznajuPluginView::fullText(const QString &str) {
 }
 
 void NeznajuPluginView::addText(QString str){
-    _isRemoteMessage=true;
+    _isRemoteMessage = true;
     qDebug() << "Str:" << str;
-    KTextEditor::Cursor curs1,curs2;
-    int n;
+    KTextEditor::Cursor curs1;
 
-    n=str.indexOf(",");
+    int n = str.indexOf(",");
     curs1.setLine(str.left(n).toInt());
     str=str.mid(n+1,str.length());
 
     n=str.indexOf(",");
     curs1.setColumn(str.left(n).toInt());
     str=str.mid(n+1,str.length());
-
+    KTextEditor::Cursor curs2;
     n=str.indexOf(",");
     curs2.setLine(str.left(n).toInt());
     str=str.mid(n+1,str.length());
@@ -121,8 +120,23 @@ void NeznajuPluginView::addText(QString str){
     //KTextEditor::Range(curs1,curs2);
 
     m_view->document()->insertText(curs1,str);
+    applyMark(curs1.line());
 
     //qDebug() << "Curline:" << cur.line() << str;
+}
+
+void NeznajuPluginView::applyMark(int line) {
+    KTextEditor::MarkInterface *iface =
+        qobject_cast<KTextEditor::MarkInterface*>( m_view->document() );
+
+    if(!iface) {
+        qDebug() << "Can't access MarkInterface";
+        return;
+    }
+    iface->clearMark(line);
+    iface->addMark(line, KTextEditor::MarkInterface::markType07);
+    iface->setMarkDescription(KTextEditor::MarkInterface::markType07,
+                              QString("mark desc on line %1").arg(line));
 }
 
 void NeznajuPluginView::delText(QString str){

@@ -18,6 +18,7 @@
 #include <QtGui/QInputDialog>
 #include <QtXml/QXmlReader>
 #include <QtCore/QPair>
+#include <ktexteditor/markinterface.h>
 
 #include "diff_match_patch.h"
 
@@ -61,6 +62,8 @@ class NeznajuPluginView
     void delText(QString str);
     void applyChanges(const QByteArray&);
     void transmitCommand(const QString&);
+
+    void applyMark(int line);
 
   private Q_SLOTS:
     // TODO: move methods which are not slots to private block
