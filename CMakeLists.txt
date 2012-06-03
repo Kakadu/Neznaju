@@ -6,7 +6,7 @@ include_directories(${KDE4_INCLUDES})
 
 # We are calling our plugin "ktexteditor_neznaju", and it contains only
 # one source file: neznaju.cpp.
-kde4_add_plugin(ktexteditor_neznaju neznaju.cpp neznajuPlugin.cpp diff_match_patch.cpp)
+kde4_add_plugin(ktexteditor_neznaju neznaju.cpp neznajuPlugin.cpp )
 
 # We need to link our plugin against kdecore libs, as well as ktexteditor
 target_link_libraries(ktexteditor_neznaju ${KDE4_KDECORE_LIBS} ${KDE4_KDEUI_LIBS} ktexteditor ${QT_QTNETWORK_LIBRARY})

@@ -19,8 +19,6 @@
 #include <QtXml/QXmlReader>
 #include <QtCore/QPair>
 
-#include "diff_match_patch.h"
-
 enum PluginStatus {
     ST_NONE,ST_SERVER,ST_CLIENT
 };
@@ -31,9 +29,6 @@ enum CommandSort {
 static const int _hotKeyListen  = Qt::CTRL + Qt::Key_I;
 static const int _hotKeyConnect = Qt::CTRL + Qt::Key_Y;
 
-/**
-  * This is the plugin view class. There can be as much instances as views exist.
-  */
 class NeznajuPluginView
    : public QObject, public KXMLGUIClient
 {
@@ -41,14 +36,11 @@ class NeznajuPluginView
     QTcpServer *_server;
     int _port;
     QTcpSocket *_clientSocket;
-    diff_match_patch dmp;
     int server_status;
     PluginStatus _pluginStatus;
     QMap<int,QTcpSocket *> SClients;
     KTextEditor::View *m_view;
     QString _oldText;
-    //bool _fromServer;
-    //int _isRemoteMessage;
     bool _lockSend;
 
   public:
@@ -75,9 +67,6 @@ class NeznajuPluginView
     void clientTryToConnect();
     void onDocumentTextInserted(KTextEditor::Document* doc,KTextEditor::Range rng);
     void onDocumentTextRemoved(KTextEditor::Document* doc,KTextEditor::Range rng);
-    //void send(const QString &);
-    //void splitMessage(const QByteArray &str);
-    //void applyDiff(QString);
   private:
 };
 
