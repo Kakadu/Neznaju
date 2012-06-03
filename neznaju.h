@@ -48,7 +48,8 @@ class NeznajuPluginView
     KTextEditor::View *m_view;
     QString _oldText;
     //bool _fromServer;
-    bool _isRemoteMessage;
+    //int _isRemoteMessage;
+    bool _lockSend;
 
   public:
     explicit NeznajuPluginView(KTextEditor::View *view = 0);

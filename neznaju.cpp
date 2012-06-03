@@ -76,14 +76,18 @@ NeznajuPluginView::NeznajuPluginView(KTextEditor::View *view)
     dmp.diff_main("","");
 
     _oldText="";
-    _isRemoteMessage=false;
+    //_isRemoteMessage=false;
+    _lockSend=true;
 }
 
 void NeznajuPluginView::fullText(const QString &str) {
-    _isRemoteMessage = true;
     if (m_view->document()->text() != str) {
+        _lockSend=true;
         KTextEditor::Cursor cur = m_view->cursorPosition();
         m_view->document()->setText(str);
+        _lockSend=false;
+        //_isRemoteMessage = m_view->document()->lines()*2;
+        //m_view->document()->insertText(m_view->cursorPosition(),str);
         /*
         m_view->document()->replaceText(
                 KTextEditor::Range(KTextEditor::Cursor(0,0),
@@ -92,12 +96,13 @@ void NeznajuPluginView::fullText(const QString &str) {
         */
         if (!m_view->setCursorPosition(cur))
             qDebug() << "Cant revert cursor position after setting full text";
-        _oldText = m_view->document()->text();
+        //_oldText = m_view->document()->text();
     }
+    //qDebug() << "Full text isRemoteMsg = " << _isRemoteMessage;
 }
 
 void NeznajuPluginView::addText(QString str){
-    _isRemoteMessage=true;
+    //_isRemoteMessage+=1;
     qDebug() << "Str:" << str;
     KTextEditor::Cursor curs1,curs2;
     int n;
@@ -120,13 +125,15 @@ void NeznajuPluginView::addText(QString str){
 
     //KTextEditor::Range(curs1,curs2);
 
+    _lockSend=true;
     m_view->document()->insertText(curs1,str);
+    _lockSend=false;
 
     //qDebug() << "Curline:" << cur.line() << str;
 }
 
 void NeznajuPluginView::delText(QString str){
-    _isRemoteMessage=true;
+    //_isRemoteMessage+=1;
     qDebug() << "Str:" << str;
     KTextEditor::Cursor curs1,curs2;
     int n;
@@ -149,8 +156,9 @@ void NeznajuPluginView::delText(QString str){
 
     KTextEditor::Range rng(curs1,curs2);
 
+    _lockSend=true;
     m_view->document()->removeText(rng);
-
+    _lockSend=false;
     //qDebug() << "Curline:" << cur.line() << str;
 }
 
@@ -350,8 +358,8 @@ void NeznajuPluginView::applyChanges(const QByteArray& msg1) {
 }
 
 void NeznajuPluginView::transmitCommand(const QString &msg) {
-    if(_isRemoteMessage) {
-        _isRemoteMessage=false;
+    //qDebug() << "transmitCmd isRemoteMsg = " << _isRemoteMessage;
+    if(_lockSend) {
         return;
     }
     QByteArray arr = QUrl::toPercentEncoding(msg);
@@ -362,6 +370,7 @@ void NeznajuPluginView::transmitCommand(const QString &msg) {
 }
 
 void NeznajuPluginView::sendToServer(QByteArray &msg) {
+    qDebug() << "Sending to server: " << msg;
     _clientSocket->write(msg);
     _clientSocket->flush();
 }
@@ -383,6 +392,7 @@ void NeznajuPluginView::onNewUserConnected() {
          connect(SClients[idusersocs],SIGNAL(readyRead()),this, SLOT(fromClientReceived()));
 
          sendFull(idusersocs);
+         qDebug() << "Sending full";
          /*
          QTextStream os(clientSocket);
          os.setAutoDetectUnicode(true);
