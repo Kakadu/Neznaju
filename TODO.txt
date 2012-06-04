@@ -1,64 +1,49 @@
-        Функциональность:
-
+        Neznaju description
 
         Server side:
 
-a) Хоткей_1: выскакивает окно с запросом слушающего порта.
+a) Hotkey_1: request for listening port
 
-b) сервер должен слушать заданный TCP порт
+b) Server should listen specified port
 
-b.a) все передаваемые сообщения должны кодироваться 
-в виде escape последовательностей
+c) All messages should be encoded with the escape sequence
 
-c) при подключении клиента выслать ему исходное содержимое документа
-содеримое документа упаковано в тег full:
-Например:
-<full>Тестовый документ 1,2,3,4,5</full>
+d) on the new client connection server should send full
+document content, packed into teg full:
+e. g.:
+<full>Test document one two three for five</full>
 
-d) При внесении изменения в документ, сервер должен разослать
-всем клиентам информацию об изменениях
-при добавлении: <add>1,2,3,4,text</add>
-1 - номер строки с которой начинаются изменения
-2 - номер столбца с которого начинаются изменения
-3 - номер строки, на которой заканчиваются изменения
-4 - номер столбца на котором заканчиваются изменения
-text - сам текст
+e) On text inserting into document server should send
+all clients information about changes:
 
-при удалении: <del>1,2,3,4</del>
-1 - номер строки с которой начинаются удаление
-2 - номер столбца с которого начинаются удаление
-3 - номер строки, на которой заканчиваются удаление
-4 - номер столбца на котором заканчиваются удаление
+on adding text:
+<add>1,2,3,4,text</add>
+1 - begining line
+2 - begining column
+3 - ending line
+4 - ending column
+text - text, inserted into document
 
-e) При получении от клиента запроса full или add/change, сервер
-должен внести изменение в свой документ и разослать информацию
-клиентам
+on deleting text:
+<del>1,2,3,4</del>
+1 - begining line
+2 - begining column
+3 - ending line
+4 - ending column
 
-f) Сервер периодически (раз в N секунд) должен рассылать всем клиентам
-md5 полной версии документа для лучшей синхронизации
-<md5>ae698hkd28nskad92034r023</md5>
-
-g) При получении запроса <getfull></getfull> сервер должен высылать
-полную версию документа
-
-
+f) On receiving from client request full or add/del, server
+should change it's own document and send information to all
+clients (except source client)
 
 
         Client side:
 
-a) Хоткей_2: выскакивает окно с запросом адреса сервера и порта.
+a) Hotkey_2: request for server address and port
 
-b) клиент должен подключиться к заданному серверу. Если не удалось,
-уведомление об ошибке подключения.
+b) client should try to connect to server. If failed - show error notification
 
-с) При внесении изменения в документ, клиент должен отправить на сервер
-либо целиком документ (full), либо информацию об изменении (add/del)
+c) on document change client should send to server information about changes
+add/del, in format, described in server side part
 
-d) При получении от сервера запроса full или add/del, клиент должен
-внести изменение в документ.
-
-e) При получении от сервера md5 запроса, клиент должен проверить 
-правильность документа, и, в случе, если докмент не верный,
-отправить серверу запрос getfull
-
-
+d) on receiving from server request full or add/del, client should
+change it's own document
