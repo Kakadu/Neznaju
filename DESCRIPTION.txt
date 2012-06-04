@@ -9,9 +9,9 @@ b) Server should listen specified port
 c) All messages should be encoded with the escape sequence
 
 d) on the new client connection server should send full
-document content, packed into teg full:
+document content, packed into tag full:
 e. g.:
-<full>Test document one two three for five</full>
+<full>Test document one two three four five</full>
 
 e) On text inserting into document server should send
 all clients information about changes:
