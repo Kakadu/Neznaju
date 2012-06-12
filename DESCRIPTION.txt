@@ -1,0 +1,49 @@
+        Neznaju description
+
+        Server side:
+
+a) Hotkey_1: request for listening port
+
+b) Server should listen specified port
+
+c) All messages should be encoded with the escape sequence
+
+d) on the new client connection server should send full
+document content, packed into tag full:
+e. g.:
+<full>Test document one two three four five</full>
+
+e) On text inserting into document server should send
+all clients information about changes:
+
+on adding text:
+<add>1,2,3,4,text</add>
+1 - begining line
+2 - begining column
+3 - ending line
+4 - ending column
+text - text, inserted into document
+
+on deleting text:
+<del>1,2,3,4</del>
+1 - begining line
+2 - begining column
+3 - ending line
+4 - ending column
+
+f) On receiving from client request full or add/del, server
+should change it's own document and send information to all
+clients (except source client)
+
+
+        Client side:
+
+a) Hotkey_2: request for server address and port
+
+b) client should try to connect to server. If failed - show error notification
+
+c) on document change client should send to server information about changes
+add/del, in format, described in server side part
+
+d) on receiving from server request full or add/del, client should
+change it's own document
