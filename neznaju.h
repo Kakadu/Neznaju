@@ -12,11 +12,9 @@
 #include <QtCore/QObject>
 #include <QtCore/QList>
 
-#include <QtNetwork>
-#include <QTcpSocket>
+#include <QtNetwork/QTcpSocket>
 #include <QtNetwork/QTcpServer>
 #include <QtGui/QInputDialog>
-#include <QtXml/QXmlReader>
 #include <QtCore/QPair>
 
 enum PluginStatus {
@@ -26,22 +24,22 @@ enum CommandSort {
     CMD_FULL, CMD_ADD, CMD_DEL, CMD_UNKNOWN
 };
 
-static const int _hotKeyListen  = Qt::CTRL + Qt::Key_I;
-static const int _hotKeyConnect = Qt::CTRL + Qt::Key_Y;
+static const int hotKeyListen  = Qt::CTRL + Qt::Key_I;
+static const int hotKeyConnect = Qt::CTRL + Qt::Key_Y;
 
 class NeznajuPluginView
     : public QObject, public KXMLGUIClient
 {
     Q_OBJECT
-    PluginStatus _pluginStatus;
+    PluginStatus pluginStatus;
     KTextEditor::View *m_view;
-    QTcpServer *_server;
-    QTcpSocket *_clientSocket;
-    int _port;
+    QTcpServer *server;
+    QTcpSocket *clientSocket;
+    int port;
     int server_status;
     QMap<int, QTcpSocket *> SClients;
-    QString _oldText;
-    bool _lockSend;
+    QString oldText;
+    bool lockSend;
 
 public:
     explicit NeznajuPluginView(KTextEditor::View *view = 0);

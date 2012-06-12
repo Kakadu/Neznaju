@@ -4,7 +4,6 @@
 
 /**
   * This is the plugin class. There will be only one instance of this class.
-  * We always want to inherit KTextEditor::Plugin here.
   */
 class NeznajuPlugin
     : public KTextEditor::Plugin

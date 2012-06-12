@@ -35,8 +35,6 @@ K_PLUGIN_FACTORY(NeznajuPluginFactory,
 // Is important to provide as last parameter "ktexteditor_plugins".
 K_EXPORT_PLUGIN(NeznajuPluginFactory("ktexteditor_neznaju", "ktexteditor_plugins"))
 
-
-// Plugin view class
 NeznajuPluginView::NeznajuPluginView(KTextEditor::View *view)
     : QObject(view)
     , KXMLGUIClient(view)
@@ -44,42 +42,41 @@ NeznajuPluginView::NeznajuPluginView(KTextEditor::View *view)
 {
     setComponentData(NeznajuPluginFactory::componentData());
 
-    KAction *action = new KAction(i18n("Insert Time && Date"), this);
     // Here we need as first parameter the same we declared at the resource
     // contents file (neznajuui.rc). We named the action "tools_insert_neznaju".
     // Here is where we connect it to an actual KDE action.
-
+    KAction *action = new KAction(i18n("Insert Time && Date"), this);
     actionCollection()->addAction("tools_insert_neznaju", action);
-    action->setShortcut(_hotKeyListen);
+    action->setShortcut(hotKeyListen);
     connect(action, SIGNAL(triggered()), this, SLOT(slotStartServer()));
 
     KAction *action2 = new KAction(i18n("connect_to_server"), this);
     actionCollection()->addAction("tools_client_connect", action2);
-    action2->setShortcut(_hotKeyConnect);
+    action2->setShortcut(hotKeyConnect);
     connect(action2, SIGNAL(triggered()), this, SLOT(clientTryToConnect()));
 
     // This is always needed, tell the KDE XML GUI client that we are using
     // that file for reading actions from.
     setXMLFile("neznajuui.rc");
-    _pluginStatus = ST_NONE;
-    _server = new QTcpServer();
-    connect(_server, SIGNAL(newConnection()), this, SLOT(onNewUserConnected()));
+    pluginStatus = ST_NONE;
+    server = new QTcpServer();
+    connect(server, SIGNAL(newConnection()), this, SLOT(onNewUserConnected()));
     connect(m_view->document(), SIGNAL(textInserted(KTextEditor::Document*, KTextEditor::Range)),
             this, SLOT(onDocumentTextInserted(KTextEditor::Document*, KTextEditor::Range)));
     connect(m_view->document(), SIGNAL(textRemoved(KTextEditor::Document*, KTextEditor::Range)),
             this, SLOT(onDocumentTextRemoved(KTextEditor::Document*, KTextEditor::Range)));
 
-    _oldText = "";
-    _lockSend = false;
+    oldText = "";
+    lockSend = false;
 }
 
 void NeznajuPluginView::fullText(const QString &str)
 {
     if (m_view->document()->text() != str) {
-        _lockSend = true;
+        lockSend = true;
         KTextEditor::Cursor cur = m_view->cursorPosition();
         m_view->document()->setText(str);
-        _lockSend = false;
+        lockSend = false;
         if (!m_view->setCursorPosition(cur))
             qDebug() << "Cant revert cursor position after setting full text";
     }
@@ -107,9 +104,9 @@ void NeznajuPluginView::addText(QString str)
     curs2.setColumn(str.left(n).toInt());
     str = str.mid(n + 1, str.length());
 
-    _lockSend = true;
+    lockSend = true;
     m_view->document()->insertText(curs1, str);
-    _lockSend = false;
+    lockSend = false;
 }
 
 void NeznajuPluginView::delText(QString str)
@@ -136,9 +133,9 @@ void NeznajuPluginView::delText(QString str)
 
     KTextEditor::Range rng(curs1, curs2);
 
-    _lockSend = true;
+    lockSend = true;
     m_view->document()->removeText(rng);
-    _lockSend = false;
+    lockSend = false;
 }
 
 
@@ -159,12 +156,12 @@ void NeznajuPluginView::clientTryToConnect()
     QString ip = serverInfo.left(pos), port = serverInfo.right(serverInfo.count() - pos - 1);
     qDebug() << "ip = " << ip << "\nport  = " << port;
 
-    this->_clientSocket = new QTcpSocket();
+    clientSocket = new QTcpSocket();
 
-    _clientSocket->connectToHost(ip, port.toInt());
+    clientSocket->connectToHost(ip, port.toInt());
 
-    _pluginStatus = ST_CLIENT;
-    connect(_clientSocket, SIGNAL(readyRead()), this, SLOT(fromServerReceived()));
+    pluginStatus = ST_CLIENT;
+    connect (clientSocket, SIGNAL(readyRead()), this, SLOT(fromServerReceived()));
 }
 
 void NeznajuPluginView::onDocumentTextInserted(KTextEditor::Document* doc, KTextEditor::Range rng)
@@ -190,7 +187,7 @@ void NeznajuPluginView::onDocumentTextRemoved(KTextEditor::Document* doc, KTextE
 
 void NeznajuPluginView::fromClientReceived()
 {
-    QTcpSocket* clientSocket = (QTcpSocket*)sender();
+    QTcpSocket *clientSocket = (QTcpSocket*)sender();
     auto msg = clientSocket->readAll();
     applyChanges(msg);
     sendToClients(msg, clientSocket->socketDescriptor());
@@ -199,11 +196,11 @@ void NeznajuPluginView::fromClientReceived()
 void NeznajuPluginView::fromServerReceived()
 {
     qDebug() << "fromServerReceived";
-    if (_clientSocket->bytesAvailable() <= 0) {
+    if (clientSocket->bytesAvailable() <= 0) {
         return;
     }
 
-    applyChanges(_clientSocket->readAll());
+    applyChanges (clientSocket->readAll());
 }
 
 QPair<CommandSort, QString> NeznajuPluginView::splitHelper2(const QString& msg,
@@ -270,22 +267,22 @@ void NeznajuPluginView::applyChanges(const QByteArray& msg1)
 
 void NeznajuPluginView::transmitCommand(const QString &msg)
 {
-    if (_lockSend) {
-        qDebug() << "locksend = " << _lockSend;
+    if  (lockSend) {
+        qDebug() << "locksend = " << lockSend;
         return;
     }
     QByteArray arr = QUrl::toPercentEncoding(msg);
-    if (_pluginStatus == ST_SERVER) {
+    if (pluginStatus == ST_SERVER) {
         sendToClients(arr);
-    } else if (_pluginStatus == ST_CLIENT) {
+    } else if  (pluginStatus == ST_CLIENT) {
         sendToServer(arr);
     }
 }
 
 void NeznajuPluginView::sendToServer(QByteArray &msg)
 {
-    _clientSocket->write(msg);
-    _clientSocket->flush();
+    clientSocket->write(msg);
+    clientSocket->flush();
 }
 
 void NeznajuPluginView::sendToClients(QByteArray &msg, int clientId)
@@ -302,7 +299,7 @@ void NeznajuPluginView::sendToClients(QByteArray &msg, int clientId)
 void NeznajuPluginView::onNewUserConnected()
 {
     if (server_status == 1) { // TODO: What this variable means
-        QTcpSocket* clientSocket = _server->nextPendingConnection();
+        QTcpSocket *clientSocket = server->nextPendingConnection();
         int idusersocs = clientSocket->socketDescriptor();
         qDebug() << "We have new connection: " << idusersocs;
         SClients[idusersocs] = clientSocket;
@@ -331,14 +328,14 @@ void NeznajuPluginView::slotStartServer()
         return;
     }
 
-    if (!_server->listen(QHostAddress::Any, port) && server_status == 0) {
+    if (!server->listen(QHostAddress::Any, port) && server_status == 0) {
         qDebug() << QObject::tr("Unable to start the server: %1.")
-                 .arg(_server->errorString());
+                 .arg (server->errorString());
     } else {
         server_status = 1;
-        _lockSend = false;
+        lockSend = false;
         qDebug() << QString::fromUtf8("Сервер запущен!");
-        _pluginStatus = ST_SERVER;
+        pluginStatus = ST_SERVER;
     }
 }
 
