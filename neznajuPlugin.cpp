@@ -1,19 +1,15 @@
 #include "neznajuPlugin.h"
 
-// Constructor
 NeznajuPlugin::NeznajuPlugin(QObject *parent, const QVariantList &args)
     : KTextEditor::Plugin(parent)
 {
-    // Avoid warning on compile time because of unused argument
     Q_UNUSED(args);
 }
 
-// Destructor
 NeznajuPlugin::~NeznajuPlugin()
 {
 }
 
-// Create the plugin view class and add it to the views list
 void NeznajuPlugin::addView(KTextEditor::View *view)
 {
     NeznajuPluginView *nview = new NeznajuPluginView(view);
@@ -33,7 +29,6 @@ void NeznajuPlugin::removeView(KTextEditor::View *view)
     }
 }
 
-// We do nothing on this methods since our plugin is not configurable yet
 void NeznajuPlugin::readConfig()
 {
 }

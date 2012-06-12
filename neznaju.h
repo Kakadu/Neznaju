@@ -33,13 +33,13 @@ class NeznajuPluginView
     : public QObject, public KXMLGUIClient
 {
     Q_OBJECT
-    QTcpServer *_server;
-    int _port;
-    QTcpSocket *_clientSocket;
-    int server_status;
     PluginStatus _pluginStatus;
-    QMap<int, QTcpSocket *> SClients;
     KTextEditor::View *m_view;
+    QTcpServer *_server;
+    QTcpSocket *_clientSocket;
+    int _port;
+    int server_status;
+    QMap<int, QTcpSocket *> SClients;
     QString _oldText;
     bool _lockSend;
 
@@ -56,7 +56,6 @@ private:
     void transmitCommand(const QString&);
 
 private Q_SLOTS:
-    // TODO: move methods which are not slots to private block
     QPair<CommandSort, QString> splitHelper2(const QString& msg,
             int left, int& right);
     void slotStartServer();

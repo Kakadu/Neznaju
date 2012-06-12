@@ -199,8 +199,9 @@ void NeznajuPluginView::fromClientReceived()
 void NeznajuPluginView::fromServerReceived()
 {
     qDebug() << "fromServerReceived";
-    if (_clientSocket->bytesAvailable() <= 0)
+    if (_clientSocket->bytesAvailable() <= 0) {
         return;
+    }
 
     applyChanges(_clientSocket->readAll());
 }
@@ -212,22 +213,25 @@ QPair<CommandSort, QString> NeznajuPluginView::splitHelper2(const QString& msg,
     static auto fail = qMakePair(CMD_UNKNOWN, QString(""));
     if (msg.indexOf("<add>", left) == left) {
         right = msg.indexOf("</add>", left);
-        if (right == -1)
+        if (right == -1) {
             return fail;
+        }
         ans = msg.mid(left + 5, right - left - 5);
         right += 6;
         return qMakePair(CMD_ADD, ans);
     } else if (msg.indexOf("<del>", left) == left) {
         right = msg.indexOf("</del>", left);
-        if (right == -1)
+        if (right == -1) {
             return fail;
+        }
         ans = msg.mid(left + 5, right - left - 5);
         right += 6;
         return qMakePair(CMD_DEL, ans);
     } else if (msg.indexOf("<full>", left) == left) {
         right = msg.indexOf("</full>", left);
-        if (right == -1)
+        if (right == -1) {
             return fail;
+        }
         ans = msg.mid(left + 6, right - left - 6);
         right += 7;
         return qMakePair(CMD_FULL, ans);
@@ -239,7 +243,8 @@ void NeznajuPluginView::applyChanges(const QByteArray& msg1)
 {
     qDebug() << "applyChanges";
     QString msg = QUrl::fromPercentEncoding(msg1);
-    int left = 0, right;
+    int left = 0;
+    int right;
     do {
         QPair<CommandSort, QString> typ = splitHelper2(msg, left, right);
         switch (typ.first) {
@@ -270,10 +275,11 @@ void NeznajuPluginView::transmitCommand(const QString &msg)
         return;
     }
     QByteArray arr = QUrl::toPercentEncoding(msg);
-    if (_pluginStatus == ST_SERVER)
+    if (_pluginStatus == ST_SERVER) {
         sendToClients(arr);
-    else if (_pluginStatus == ST_CLIENT)
+    } else if (_pluginStatus == ST_CLIENT) {
         sendToServer(arr);
+    }
 }
 
 void NeznajuPluginView::sendToServer(QByteArray &msg)
@@ -285,11 +291,12 @@ void NeznajuPluginView::sendToServer(QByteArray &msg)
 void NeznajuPluginView::sendToClients(QByteArray &msg, int clientId)
 {
     qDebug() << "sendToClients " << msg;
-    for (QMap<int, QTcpSocket *>::Iterator i = SClients.begin(); i != SClients.end(); ++i)
+    for (QMap<int, QTcpSocket *>::Iterator i = SClients.begin(); i != SClients.end(); ++i) {
         if (clientId != i.key()) {
             (*i)->write(msg.data());
             (*i)->flush();
         }
+    }
 }
 
 void NeznajuPluginView::onNewUserConnected()
