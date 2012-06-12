@@ -7,12 +7,12 @@
   * We always want to inherit KTextEditor::Plugin here.
   */
 class NeznajuPlugin
-  : public KTextEditor::Plugin
+    : public KTextEditor::Plugin
 {
-  public:
+public:
     // Constructor
     explicit NeznajuPlugin(QObject *parent,
-                            const QVariantList &args);
+                           const QVariantList &args);
     // Destructor
     virtual ~NeznajuPlugin();
 
@@ -23,13 +23,13 @@ class NeznajuPlugin
     // Kate plugins are added to views. For that reason we have the plugin itself
     // (this class) and then the plugin view class.
     // In this methods we have to create/remove NeznajuPluginView classes.
-    void addView (KTextEditor::View *view);
-    void removeView (KTextEditor::View *view);
+    void addView(KTextEditor::View *view);
+    void removeView(KTextEditor::View *view);
 
     void readConfig();
     void writeConfig();
 
-  private:
+private:
     QList<class NeznajuPluginView*> m_views;
 };
 

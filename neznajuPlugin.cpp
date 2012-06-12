@@ -24,10 +24,8 @@ void NeznajuPlugin::addView(KTextEditor::View *view)
 // Do not forget to free the memory.
 void NeznajuPlugin::removeView(KTextEditor::View *view)
 {
-    for (int z = 0; z < m_views.size(); z++)
-    {
-        if (m_views.at(z)->parentClient() == view)
-        {
+    for (int z = 0; z < m_views.size(); z++) {
+        if (m_views.at(z)->parentClient() == view) {
             NeznajuPluginView *nview = m_views.at(z);
             m_views.removeAll(nview);
             delete nview;

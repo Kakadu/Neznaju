@@ -20,33 +20,33 @@
 #include <QtCore/QPair>
 
 enum PluginStatus {
-    ST_NONE,ST_SERVER,ST_CLIENT
+    ST_NONE, ST_SERVER, ST_CLIENT
 };
 enum CommandSort {
-    CMD_FULL,CMD_ADD,CMD_DEL,CMD_UNKNOWN
+    CMD_FULL, CMD_ADD, CMD_DEL, CMD_UNKNOWN
 };
 
 static const int _hotKeyListen  = Qt::CTRL + Qt::Key_I;
 static const int _hotKeyConnect = Qt::CTRL + Qt::Key_Y;
 
 class NeznajuPluginView
-   : public QObject, public KXMLGUIClient
+    : public QObject, public KXMLGUIClient
 {
-  Q_OBJECT
+    Q_OBJECT
     QTcpServer *_server;
     int _port;
     QTcpSocket *_clientSocket;
     int server_status;
     PluginStatus _pluginStatus;
-    QMap<int,QTcpSocket *> SClients;
+    QMap<int, QTcpSocket *> SClients;
     KTextEditor::View *m_view;
     QString _oldText;
     bool _lockSend;
 
-  public:
+public:
     explicit NeznajuPluginView(KTextEditor::View *view = 0);
     ~NeznajuPluginView() {}
-  private:
+private:
     void sendToServer(QByteArray &);
     void sendToClients(QByteArray &, int clientId = -1);
     void fullText(const QString &str);
@@ -55,19 +55,19 @@ class NeznajuPluginView
     void applyChanges(const QByteArray&);
     void transmitCommand(const QString&);
 
-  private Q_SLOTS:
+private Q_SLOTS:
     // TODO: move methods which are not slots to private block
-    QPair<CommandSort,QString> splitHelper2(const QString& msg,
-                             int left,int& right);
+    QPair<CommandSort, QString> splitHelper2(const QString& msg,
+            int left, int& right);
     void slotStartServer();
     void onNewUserConnected();
     void fromClientReceived();
     void fromServerReceived();
     void sendFull(int clientId);
     void clientTryToConnect();
-    void onDocumentTextInserted(KTextEditor::Document* doc,KTextEditor::Range rng);
-    void onDocumentTextRemoved(KTextEditor::Document* doc,KTextEditor::Range rng);
-  private:
+    void onDocumentTextInserted(KTextEditor::Document* doc, KTextEditor::Range rng);
+    void onDocumentTextRemoved(KTextEditor::Document* doc, KTextEditor::Range rng);
+private:
 };
 
 #endif // NEZNAJU_H
